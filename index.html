@@ -135,7 +135,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--mu
 
 /* ---------------- game screen ---------------- */
 #game{height:100vh;height:100dvh;min-height:0;overflow:hidden}
-#game.on{display:grid;grid-template-rows:auto auto 1fr auto auto auto;grid-template-areas:"top" "opp" "table" "hand" "bar" "voice"}
+#game.on{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto auto;grid-template-areas:"top" "opp" "table" "hand" "bar" "voice"}
 .gtop{grid-area:top;display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line)}
 .gtop .back{min-width:42px;height:38px}
 .gtop .ttl{flex:1;font-size:13px;color:var(--muted);line-height:1.2;min-width:0}
@@ -200,12 +200,13 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--mu
 .stamp>b.bad{color:#ff6b5e}
 @keyframes stamp{from{transform:rotate(-7deg) scale(2.4);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
 
-.hand{grid-area:hand;padding:8px 6px 4px;background:var(--panel);border-top:1px solid var(--line);position:relative}
+.hand{grid-area:hand;min-width:0;overflow:hidden;padding:8px 6px 4px;background:var(--panel);border-top:1px solid var(--line);position:relative}
 .hinfo{display:flex;justify-content:space-between;align-items:center;padding:0 8px 4px;font-size:14px;min-height:26px;gap:8px}
 .hinfo .cnt{font-family:var(--disp);font-size:19px}
 .mycards{display:flex;flex-direction:column;align-items:center;padding-top:16px;min-height:calc(var(--hw)*1.45 + 20px)}
 .hrow{display:flex;justify-content:center;direction:ltr}
-.hrow+.hrow{margin-top:calc(var(--hw)*-0.78)}
+.hrow+.hrow{margin-top:var(--rg,4px)}
+.hrow{position:relative}
 .hrow>.tk{--w:var(--hw);cursor:pointer;transition:transform .14s,filter .14s;margin-inline:calc(var(--ov)*-1);touch-action:manipulation}
 .hrow>.tk.sel{transform:translateY(-16px);box-shadow:0 0 0 3px var(--acc2),0 8px 16px rgba(0,0,0,.45);z-index:2}
 .hrow>.tk.dim{filter:brightness(.5) saturate(.6)}
@@ -234,7 +235,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--mu
 
 /* landscape: table on one side, hand + controls on the other */
 @media (orientation:landscape) and (max-height:560px){
-  #game.on{grid-template-columns:1.2fr 1fr;grid-template-rows:auto auto 1fr auto auto;grid-template-areas:"top top" "opp hand" "table hand" "table bar" "table voice"}
+  #game.on{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;grid-template-areas:"top top" "opp hand" "table hand" "table bar" "table voice"}
   .hand{border-top:0;border-inline-start:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;overflow:auto}
   .gbar,.voice{border-inline-start:1px solid var(--line)}
   .opps{padding:4px 8px}
@@ -1208,7 +1209,7 @@ ar: { subtitle: '!أوقِع صاحبك', tagline: 'لعبة الورق مع +2 
 /* =====================================================================
    TrickyNest — app core (storage · settings · screens · cards · sound)
    ===================================================================== */
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const P = 'tricky_';
@@ -1625,21 +1626,25 @@ function renderBar(V) {
 }
 // card width, overlap and rows for the hand: visible width = (k-1)·step + card width per row
 function handLayout(n) {
+  // sized from the screen, never from the hand itself (reading the hand's own width let a wide row widen the grid and feed itself)
   const g = $('#game'), land = matchMedia('(orientation:landscape) and (max-height:560px)').matches;
-  const cw = $('#cards').clientWidth || (land ? g.clientWidth * 0.45 : g.clientWidth), W = cw - 12, H = g.clientHeight || innerHeight;
+  const W = (land ? innerWidth / 2.2 : innerWidth) - 26, H = g.clientHeight || innerHeight;
   let hw = Math.max(48, Math.min(84, Math.floor((land ? H * 0.34 : H * 0.15) / 1.45)));
   if (hw > W / 2.2) hw = Math.max(44, Math.floor(W / 2.2));
   const maxPer = Math.max(2, Math.floor((W - hw) / (hw * 0.42)) + 1);
   const rows = Math.min(3, Math.ceil(Math.max(1, n) / maxPer)), k = Math.ceil(Math.max(1, n) / rows);
   if (rows > 1) hw = Math.max(44, Math.round(hw * (rows === 2 ? 0.9 : 0.8)));
   const step = Math.min(hw + 6, k > 1 ? (W - hw) / (k - 1) : hw + 6);
-  return { hw, rows, ov: (hw - step) / 2, land, H };
+  // rows: use the free height so they barely overlap; only on a really short screen do they slide over each other
+  const ch = hw * 1.45, budget = land ? H * 0.62 : H * 0.36;
+  const vis = rows > 1 ? Math.max(hw * 0.55, Math.min(ch + 4, (budget - ch) / (rows - 1))) : ch;
+  return { hw, rows, ov: (hw - step) / 2, rg: vis - ch, land, H };
 }
 function sizeCards() {
   const g = $('#game'); if (!g || !g.classList.contains('on')) return;
   const V = CUR ? curView() : null, L = handLayout(V ? V.hand.length : 8);
   const tw = Math.max(50, Math.min(110, Math.floor((L.land ? L.H * 0.32 : L.H * 0.165) / 1.45)));
-  g.style.setProperty('--hw', L.hw + 'px'); g.style.setProperty('--ov', L.ov.toFixed(1) + 'px'); g.style.setProperty('--tw', tw + 'px');
+  g.style.setProperty('--hw', L.hw + 'px'); g.style.setProperty('--ov', L.ov.toFixed(1) + 'px'); g.style.setProperty('--rg', L.rg.toFixed(1) + 'px'); g.style.setProperty('--tw', tw + 'px');
   const rows = $$('#cards>.hrow').length;
   if (V && rows && rows !== L.rows && !CUR.passing && V.me >= 0) renderHand(V);
 }

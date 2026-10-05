@@ -21,7 +21,7 @@
 
 /* TrickyNest service worker — the app shell is network-first (a new upload always wins online),
    falling back to the cache offline. Pictures are cache-first. Bump VERSION on every upload. */
-const VERSION = 'trickynest-v1';
+const VERSION = 'trickynest-v2';
 const AV = []; for (let i = 1; i <= 12; i++) AV.push('./av-' + String(i).padStart(2, '0') + '.webp');
 const SHELL = ['./', './manifest.json', './icon-192.png', './icon-512.png', './privacy_policy.html'].concat(AV);
 

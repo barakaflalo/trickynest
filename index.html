@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-theme="gold" data-mode="night" data-board="grape">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrickyNest · תדפוק את החבר!</title>
+<meta name="description" content="TrickyNest — משחק קלפים משפחתי: מול המחשב, כמה שחקנים בטלפון אחד, ואונליין עם חברים ודיבור.">
+<meta name="theme-color" content="#0a0a0a">
+<meta property="og:title" content="TrickyNest · תדפוק את החבר!">
+<meta property="og:description" content="משחק הקלפים עם +2, עצור, רצף ומלך — מול המחשב, בטלפון אחד או אונליין עם חברים.">
+<meta property="og:image" content="icon-512.png">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Secular+One&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ---------------- tokens: app theme (data-theme × data-mode) ---------------- */
+:root{
+  --bg:#070707; --panel:#121212; --panel2:#1a1a1a; --line:#2c2a24; --ink:#f3efe4; --muted:#a39d8c;
+  --acc:#d4a940; --acc2:#f0cd6e; --accInk:#140f02; --ok:#46b46e; --bad:#e0584f;
+  --felt1:#3a2357; --felt2:#1b0f2b; --feltLine:rgba(255,255,255,.10); --feltInk:#f6f0ff;
+  /* the four card colours — each also has its own shape ● ▲ ■ ◆ */
+  --k0:#e2412f; --k1:#f2b51a; --k2:#2f9e4f; --k3:#2a6fd6; --kw:#1a1424; --kInk:#fffaf0; --kEdge:rgba(0,0,0,.35);
+  --cb1:#2a1740; --cb2:#d4a940;
+  --r:14px; --disp:'Secular One','Rubik',system-ui,sans-serif; --body:'Rubik',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+[data-theme="silver"]{--acc:#c9ced6;--acc2:#eef1f5;--accInk:#0d0f12;--line:#2a2d33;--cb2:#c9ced6}
+[data-theme="emerald"]{--acc:#3fbf7f;--acc2:#7fe0ae;--accInk:#03140b;--line:#1f3329;--cb2:#3fbf7f}
+[data-theme="ruby"]{--acc:#e0566a;--acc2:#f598a6;--accInk:#1a0408;--line:#3a2328;--cb2:#e0566a}
+[data-theme="ocean"]{--acc:#4aa8e8;--acc2:#97d0f6;--accInk:#03111c;--line:#1f2d3a;--cb2:#4aa8e8}
+[data-mode="day"]{--bg:#f4f2ec;--panel:#ffffff;--panel2:#f0ede5;--line:#d9d3c4;--ink:#17150f;--muted:#6b6455}
+[data-mode="day"][data-theme="gold"]{--acc:#a8801c;--acc2:#c99b2c;--accInk:#fff}
+[data-mode="day"][data-theme="silver"]{--acc:#5c6573;--acc2:#7d8796;--accInk:#fff}
+[data-mode="day"][data-theme="emerald"]{--acc:#1f8a55;--acc2:#2ea96b;--accInk:#fff}
+[data-mode="day"][data-theme="ruby"]{--acc:#b8344a;--acc2:#d14d62;--accInk:#fff}
+[data-mode="day"][data-theme="ocean"]{--acc:#1f6fa8;--acc2:#2f8acb;--accInk:#fff}
+/* table colour is its own setting (after the themes, same specificity → it wins) */
+[data-board="grape"]{--felt1:#3a2357;--felt2:#1b0f2b;--feltInk:#f6f0ff;--feltLine:rgba(255,255,255,.10)}
+[data-board="felt"]{--felt1:#1f6b45;--felt2:#0f4029;--feltInk:#f4f1e6;--feltLine:rgba(255,255,255,.10)}
+[data-board="wood"]{--felt1:#8a5a32;--felt2:#5a3519;--feltInk:#fff6e8;--feltLine:rgba(255,235,200,.14)}
+[data-board="contrast"]{--felt1:#101010;--felt2:#000;--feltInk:#fff;--feltLine:rgba(255,255,255,.3);--k0:#ff3b30;--k1:#ffd400;--k2:#00b84a;--k3:#2b7bff;--kEdge:#fff}
+[data-board="theme"]{--felt1:var(--panel2);--felt2:var(--bg);--feltInk:var(--ink);--feltLine:var(--line)}
+
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+input,select{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+h1,h2,h3{font-family:var(--disp);font-weight:400;margin:0;line-height:1.15}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.muted{color:var(--muted)}
+.hide{display:none!important}
+
+/* ---------------- screens ---------------- */
+.scr{display:none;min-height:100vh;min-height:100dvh;flex-direction:column}
+.scr.on{display:flex;animation:scrIn .18s ease-out}
+@keyframes scrIn{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+.bar h2{font-size:22px;flex:1}
+.back{min-width:48px;height:44px;border-radius:12px;border:1.5px solid var(--acc);background:transparent;color:var(--acc);font-size:20px;font-weight:700}
+.wrap{padding:16px;max-width:640px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.card h3{font-size:19px;margin-bottom:8px}
+.btn{border:1.5px solid var(--acc);background:transparent;color:var(--acc);border-radius:12px;padding:12px 16px;font-weight:700;min-height:48px}
+.btn.main{background:var(--acc);color:var(--accInk);font-size:18px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.small{min-height:38px;padding:6px 12px;font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;flex-wrap:wrap}
+.seg>button{flex:1;border:0;background:transparent;padding:10px 6px;min-height:44px;font-weight:500;color:var(--muted)}
+.seg>button.on{background:var(--acc);color:var(--accInk);font-weight:700}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.sw:last-child{border-bottom:0}
+.sw input[type=checkbox]{width:26px;height:26px;accent-color:var(--acc);flex:none}
+.sw small{display:block;font-size:13px}
+.toast{position:fixed;inset-inline:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:90;background:var(--panel);border:1px solid var(--acc);color:var(--ink);padding:12px 16px;border-radius:12px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(20px);transition:.2s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+.badge{text-align:center;font-size:12px;color:var(--muted);padding:18px 0 8px}
+.badge b{color:var(--acc);font-weight:700}
+
+/* ---------------- home ---------------- */
+#home .hero{padding:26px 18px 8px;text-align:center;position:relative;overflow:hidden}
+.fan{display:flex;justify-content:center;margin:20px 0 4px;height:104px;direction:ltr}
+.fan>.tk{--w:62px;margin-inline:-12px;transition:transform .3s}
+.fan>.tk:nth-child(1){transform:rotate(-18deg) translateY(14px)}
+.fan>.tk:nth-child(2){transform:rotate(-7deg) translateY(3px)}
+.fan>.tk:nth-child(3){transform:rotate(5deg) translateY(1px)}
+.fan>.tk:nth-child(4){transform:rotate(17deg) translateY(12px)}
+.wordmark{font-family:var(--disp);font-size:60px;line-height:.95;margin-top:10px;color:var(--ink);letter-spacing:.5px;direction:ltr}
+.wordmark i{font-style:normal;color:var(--acc)}
+.sub{display:inline-block;margin-top:8px;font-family:var(--disp);font-size:22px;color:var(--accInk);background:var(--acc);padding:2px 14px 4px;border-radius:10px;transform:rotate(-3deg)}
+.tagline{margin:12px 0 0}
+.modes{display:grid;gap:12px}
+.mode{display:flex;align-items:center;gap:14px;text-align:start;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:16px;min-height:76px}
+.mode .ic{font-size:30px;width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:var(--panel2);flex:none}
+.mode b{display:block;font-size:19px;font-family:var(--disp);font-weight:400}
+.mode span{font-size:14px;color:var(--muted)}
+.mode.prime{border-color:var(--acc)}
+.mode.resume{border-style:dashed;border-color:var(--acc)}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tools button{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 4px;min-height:64px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted)}
+.tools button i{font-style:normal;font-size:22px}
+.quickset{position:absolute;top:10px;inset-inline-end:12px;display:flex;gap:6px;z-index:2}
+.quickset button{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--panel);font-size:18px}
+
+/* ---------------- TrickyNest cards (CSS + inline SVG, no image files) ---------------- */
+.tk{--w:64px;--kc:var(--k0);width:var(--w);height:calc(var(--w)*1.45);border-radius:calc(var(--w)*.13);background:var(--kc);position:relative;flex:none;color:var(--kInk);
+  box-shadow:0 0 0 1px var(--kEdge),0 2px 6px rgba(0,0,0,.4);user-select:none;-webkit-user-select:none;direction:ltr;overflow:hidden;font-family:var(--disp)}
+.tk::before{content:'';position:absolute;inset:calc(var(--w)*.06);border:calc(var(--w)*.025) solid rgba(255,250,240,.55);border-radius:calc(var(--w)*.09);pointer-events:none}
+.tk::after{content:'';position:absolute;width:150%;height:62%;left:-25%;top:19%;background:rgba(255,255,255,.13);border-radius:50%;transform:rotate(-24deg);pointer-events:none}
+.tk.c1{--kc:var(--k1);color:#2b1d00}
+.tk.c1::before{border-color:rgba(43,29,0,.35)}
+.tk.c2{--kc:var(--k2)} .tk.c3{--kc:var(--k3)}
+.tk.cw{--kc:var(--kw);background:radial-gradient(circle at 50% 50%,#2c2140,var(--kw) 70%)}
+.tk.cw::before{border:calc(var(--w)*.035) solid transparent;background:conic-gradient(var(--k0) 0 25%,var(--k1) 0 50%,var(--k2) 0 75%,var(--k3) 0) border-box;-webkit-mask:linear-gradient(#000 0 0) padding-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.tk>.ix{position:absolute;top:calc(var(--w)*.09);left:calc(var(--w)*.12);font-size:calc(var(--w)*.24);line-height:1;text-align:center;z-index:1}
+.tk>.ix small{display:block;font-size:calc(var(--w)*.17);margin-top:calc(var(--w)*.02)}
+.tk>.ix.b{top:auto;left:auto;bottom:calc(var(--w)*.09);right:calc(var(--w)*.12);transform:rotate(180deg)}
+.tk>.mid{position:absolute;inset:0;display:grid;place-items:center;z-index:1}
+.tk>.mid>b{font-size:calc(var(--w)*.72);line-height:1;font-weight:400;text-shadow:0 calc(var(--w)*.03) 0 rgba(0,0,0,.28);margin-top:calc(var(--w)*.04)}
+.tk>.mid>b.sm{font-size:calc(var(--w)*.5)}
+.tk>.mid>svg{width:calc(var(--w)*.62);height:calc(var(--w)*.62);filter:drop-shadow(0 calc(var(--w)*.025) 0 rgba(0,0,0,.28))}
+.tk>.nm{position:absolute;bottom:calc(var(--w)*.27);inset-inline:0;text-align:center;font:700 calc(var(--w)*.12)/1 var(--body);letter-spacing:.3px;z-index:1;opacity:.92}
+.tk.cw>.nm{color:#f2e7c9}
+.tkb{background:repeating-linear-gradient(135deg,var(--cb1) 0 7px,color-mix(in srgb,var(--cb2) 30%,var(--cb1)) 7px 9px);box-shadow:0 0 0 1.5px var(--cb2),0 2px 6px rgba(0,0,0,.4)}
+.tkb::before{inset:16%;border:calc(var(--w)*.03) solid var(--cb2);border-radius:50%;opacity:.85}
+.tkb::after{content:'TN';background:none;transform:none;width:auto;height:auto;inset:0;display:grid;place-items:center;color:var(--cb2);font:400 calc(var(--w)*.3)/1 var(--disp);border-radius:0}
+
+/* ---------------- game screen ---------------- */
+#game{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+#game.on{display:grid;grid-template-rows:auto auto 1fr auto auto auto;grid-template-areas:"top" "opp" "table" "hand" "bar" "voice"}
+.gtop{grid-area:top;display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line)}
+.gtop .back{min-width:42px;height:38px}
+.gtop .ttl{flex:1;font-size:13px;color:var(--muted);line-height:1.2;min-width:0}
+.gtop .ttl b{display:block;font-family:var(--disp);font-weight:400;color:var(--ink);font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{width:40px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-size:17px;flex:none}
+.net{font-size:12px;padding:3px 8px;border-radius:20px;border:1px solid var(--line);white-space:nowrap}
+.net.ok{border-color:var(--ok);color:var(--ok)} .net.warn{border-color:var(--bad);color:var(--bad)}
+.opps{grid-area:opp;display:flex;gap:6px;padding:6px 8px;overflow-x:auto;background:var(--panel)}
+.opp{flex:1 1 0;min-width:96px;max-width:210px;border:1.5px solid var(--line);border-radius:14px;padding:5px 7px;position:relative;background:var(--panel2);display:grid;grid-template-columns:auto 1fr;column-gap:7px;align-items:center;text-align:start}
+.opp.turn{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 35%,transparent)}
+.opp>.av{grid-row:span 2;width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--panel);border:2px solid var(--line)}
+.opp.turn>.av{border-color:var(--acc)}
+.opp>.nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.opp>.ct{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);min-width:0;flex-wrap:wrap}
+.opp>.ct>b{font:400 20px/1 var(--disp);color:var(--ink)}
+.opp>.ct>.lk{letter-spacing:1px;white-space:nowrap}
+.opp .off{color:var(--bad);font-size:11px}
+.opp>.flag{position:absolute;top:-8px;inset-inline-end:-4px;background:var(--bad);color:#fff;border-radius:12px;font-size:11px;padding:1px 7px;font-weight:700;animation:pop .25s ease-out}
+.opp>.flag.tk2{background:var(--ok);color:#000}
+.opps.many>.opp{min-width:0;grid-template-columns:1fr;justify-items:center;text-align:center;padding:4px 3px;row-gap:1px}
+.opps.many>.opp>.av{grid-row:auto;width:32px;height:32px}
+.opps.many>.opp>.nm{font-size:11px;max-width:100%}
+.opps.many>.opp>.ct{justify-content:center;gap:3px}
+.opps.many>.opp>.ct>b{font-size:17px}
+.opps.many .lk>em{display:none}
+.lk .k0{color:var(--k0)} .lk .k1{color:var(--k1)} .lk .k2{color:var(--k2)} .lk .k3{color:var(--k3)}
+#bubbles{position:fixed;inset:0;pointer-events:none;z-index:55}
+.bubble{position:absolute;max-width:min(80vw,320px);z-index:20;background:#fffaf0;color:#111;border-radius:12px;padding:5px 10px;font-size:14px;font-weight:500;box-shadow:0 4px 14px rgba(0,0,0,.4);margin-top:4px;animation:pop .25s ease-out}
+.bubble.big{font-size:30px;padding:0 6px;background:transparent;box-shadow:none}
+.bubble.mine{background:var(--acc2);color:var(--accInk)}
+.bubble.vm{pointer-events:auto;background:var(--acc);color:var(--accInk)}
+.bubble.shout{background:var(--bad);color:#fff;font-weight:700}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+
+.table{grid-area:table;position:relative;background:radial-gradient(ellipse at 50% 42%,var(--felt1),var(--felt2) 80%);color:var(--feltInk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;min-height:0;overflow:hidden;touch-action:manipulation}
+.table::before{content:'';position:absolute;inset:10px;border:1.5px solid var(--feltLine);border-radius:26px;pointer-events:none}
+.status{font-size:15px;text-align:center;min-height:24px;background:rgba(0,0,0,.3);padding:4px 14px;border-radius:20px;max-width:94%;position:relative;z-index:2}
+.tmid{display:flex;align-items:center;justify-content:center;gap:clamp(18px,8vw,46px);width:100%;position:relative;z-index:1}
+.deckbox,.pilebox{display:flex;flex-direction:column;align-items:center;gap:6px;border-radius:16px;padding:6px;position:relative}
+.deckbox>.lb,.pilebox>.lb{font-size:12px;opacity:.88;white-space:nowrap}
+.dstack{position:relative;width:var(--tw);height:calc(var(--tw)*1.45)}
+.dstack>.tk{--w:var(--tw);position:absolute;top:0;left:0}
+.dstack>.tk:nth-child(1){transform:translate(5px,5px)}
+.dstack>.tk:nth-child(2){transform:translate(2.5px,2.5px)}
+.pile{position:relative;width:var(--tw);height:calc(var(--tw)*1.45)}
+.pile>.tk{--w:var(--tw);position:absolute;top:0;left:0}
+.pile>.tk.u0{transform:rotate(-14deg) translate(-6px,2px)}
+.pile>.tk.u1{transform:rotate(9deg) translate(5px,1px)}
+.pile>.tk.u2{transform:rotate(-4deg)}
+.halo{position:absolute;inset:calc(var(--tw)*-0.16);border-radius:calc(var(--tw)*.24);border:4px solid var(--hc,transparent);box-shadow:0 0 18px var(--hc,transparent);pointer-events:none;transition:border-color .25s,box-shadow .25s}
+.d2{position:absolute;top:calc(var(--tw)*-0.28);inset-inline-end:calc(var(--tw)*-0.34);background:var(--bad);color:#fff;font:400 calc(var(--tw)*.36)/1 var(--disp);padding:4px 9px 6px;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.5);animation:pop .25s ease-out;z-index:3;direction:ltr}
+.dirw{position:absolute;inset:-22px -40px;pointer-events:none;opacity:.35;z-index:0}
+.dirw svg{width:100%;height:100%}
+.dirw.ccw svg{transform:scaleX(-1)}
+.colorline{font-size:13px;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.28);border-radius:20px;padding:2px 12px;white-space:nowrap}
+.colorline>i{font-style:normal;font-size:16px}
+.seqbar{position:relative;z-index:2;background:rgba(0,0,0,.45);border:2px solid var(--hc,var(--acc));border-radius:14px;padding:6px 12px;font-size:14px;text-align:center;animation:pop .2s ease-out}
+.lastact{font-size:13px;opacity:.9;text-align:center;min-height:20px;position:relative;z-index:2;max-width:96%}
+.go .pilebox{outline:3px dashed var(--acc2);outline-offset:4px;cursor:pointer}
+.stamp{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:30}
+.stamp>b{font-family:var(--disp);font-weight:400;font-size:min(16vw,92px);color:var(--acc2);border:7px solid currentColor;border-radius:22px;padding:0 22px 10px;transform:rotate(-7deg);text-shadow:0 4px 0 rgba(0,0,0,.35);animation:stamp .5s cubic-bezier(.2,1.6,.4,1) both;background:rgba(0,0,0,.45);max-width:92%;text-align:center;line-height:1.1}
+.stamp>b.bad{color:#ff6b5e}
+@keyframes stamp{from{transform:rotate(-7deg) scale(2.4);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
+
+.hand{grid-area:hand;padding:8px 6px 4px;background:var(--panel);border-top:1px solid var(--line);position:relative}
+.hinfo{display:flex;justify-content:space-between;align-items:center;padding:0 8px 4px;font-size:14px;min-height:26px;gap:8px}
+.hinfo .cnt{font-family:var(--disp);font-size:19px}
+.mycards{display:flex;flex-direction:column;align-items:center;padding-top:16px;min-height:calc(var(--hw)*1.45 + 20px)}
+.hrow{display:flex;justify-content:center;direction:ltr}
+.hrow+.hrow{margin-top:calc(var(--hw)*-0.78)}
+.hrow>.tk{--w:var(--hw);cursor:pointer;transition:transform .14s,filter .14s;margin-inline:calc(var(--ov)*-1);touch-action:manipulation}
+.hrow>.tk.sel{transform:translateY(-16px);box-shadow:0 0 0 3px var(--acc2),0 8px 16px rgba(0,0,0,.45);z-index:2}
+.hrow>.tk.dim{filter:brightness(.5) saturate(.6)}
+.hrow>.tk.hintc{box-shadow:0 0 0 3px #59c3ff,0 8px 16px rgba(0,0,0,.45)}
+.hrow>.tk.new{animation:newc .9s ease-out}
+.hrow>.tk.shake{animation:shake .32s}
+@keyframes newc{0%{transform:translateY(-14px)}100%{transform:none}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mycards.wait>.tk{cursor:default}
+.gbar{grid-area:bar;display:flex;gap:8px;padding:8px 10px;background:var(--panel);align-items:stretch}
+.gbar .btn{min-height:50px;padding:8px 10px}
+.gbar .grow{flex:1.3}
+.lcb{flex:1.4;font-family:var(--disp);font-size:19px!important;font-weight:400!important;border-color:var(--bad)!important;color:var(--bad)!important}
+.lcb.on{background:var(--bad)!important;color:#fff!important}
+.clb{border-color:var(--ok)!important;color:var(--ok)!important}
+.voice{grid-area:voice;display:flex;gap:6px;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));background:var(--panel2);border-top:1px solid var(--line);align-items:center;position:relative}
+.voice .btn{min-height:44px;padding:6px 10px;font-size:14px}
+.ptt{flex:1.6;user-select:none;-webkit-user-select:none;touch-action:none}
+.ptt.on{background:var(--ok)!important;color:#000!important;border-color:var(--ok)!important}
+.vbtn.on{background:var(--acc);color:var(--accInk)}
+.rec.on{background:var(--bad);color:#fff;border-color:var(--bad)}
+.emo{position:absolute;bottom:100%;inset-inline:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;z-index:40;box-shadow:0 -6px 24px rgba(0,0,0,.4)}
+.emo>button{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:6px 10px;font-size:15px;min-height:40px}
+.emo>button.e{font-size:22px;padding:4px 8px}
+.flyer{position:fixed;z-index:50;pointer-events:none;transition:transform .42s cubic-bezier(.3,.7,.3,1),opacity .42s}
+
+/* landscape: table on one side, hand + controls on the other */
+@media (orientation:landscape) and (max-height:560px){
+  #game.on{grid-template-columns:1.2fr 1fr;grid-template-rows:auto auto 1fr auto auto;grid-template-areas:"top top" "opp hand" "table hand" "table bar" "table voice"}
+  .hand{border-top:0;border-inline-start:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;overflow:auto}
+  .gbar,.voice{border-inline-start:1px solid var(--line)}
+  .opps{padding:4px 8px}
+}
+
+/* ---------------- overlays ---------------- */
+.ov{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:14px}
+.ov>.box{background:var(--panel);border:1px solid var(--acc);border-radius:18px;max-width:560px;width:100%;max-height:calc(100dvh - 28px);overflow:auto;padding:18px}
+.ov h2{font-size:26px;margin-bottom:6px}
+.pass{background:var(--bg)!important}
+.pass>.box{text-align:center;display:flex;flex-direction:column;gap:14px;border:0;background:transparent}
+.pass h2{font-size:30px;color:var(--acc)}
+.pass .bigav{width:110px;height:110px;border-radius:50%;margin:0 auto;border:3px solid var(--acc);object-fit:cover}
+.picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.picker>button{min-height:84px;border-radius:16px;border:0;color:#fff;font:400 22px/1.1 var(--disp);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.25)}
+.picker>button>i{font-style:normal;font-size:26px}
+.picker>button.p1{color:#2b1d00}
+.res{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.rp{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel2)}
+.rp.win{border-color:var(--ok)}
+.rp>.top{display:flex;justify-content:space-between;gap:8px;font-weight:700;align-items:center}
+.rp>.top>span:first-child{display:flex;align-items:center;gap:8px}
+.rp .mini-av{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.rp>.cs{display:flex;gap:3px;margin-top:6px;flex-wrap:wrap;direction:ltr;justify-content:flex-end}
+.rp>.cs>.tk{--w:30px}
+.rp>.cs>.tk>.ix,.rp>.cs>.tk>.nm{display:none}
+.rp>.cs>.tk>.mid>b{margin-top:0}
+.tag{font-size:12px;padding:1px 8px;border-radius:12px;background:var(--acc);color:var(--accInk);font-weight:700;margin-inline-start:6px}
+.tag.red{background:var(--bad);color:#fff}
+table.sc{width:100%;border-collapse:collapse;font-size:14px}
+table.sc th,table.sc td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:center}
+table.sc th{color:var(--muted);font-weight:500}
+table.sc tr.tot td{font-weight:700;color:var(--acc)}
+.code{font-family:var(--disp);font-size:52px;letter-spacing:6px;color:var(--acc);text-align:center;direction:ltr}
+.seats{display:flex;flex-direction:column;gap:6px}
+.seat{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.seat>.d{width:10px;height:10px;border-radius:50%;background:var(--ok);flex:none}
+.seat>.d.no{background:var(--bad)}
+.seat>img{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.seat>b{flex:1}
+.avs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.avs>button{padding:0;border:3px solid transparent;border-radius:50%;background:none;aspect-ratio:1;overflow:hidden}
+.avs>button.on{border-color:var(--acc)}
+.avs img{width:100%;height:100%;object-fit:cover;display:block}
+.guide .dots{display:flex;gap:6px;justify-content:center;margin:12px 0}
+.guide .dots>i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.guide .dots>i.on{background:var(--acc)}
+.gdemo{display:flex;justify-content:center;gap:8px;margin:6px 0 10px;direction:ltr}
+.gdemo>.tk{--w:54px}
+.rules p,.rules li{line-height:1.65}
+.rules h3{color:var(--acc);margin-top:6px}
+.rcards{display:flex;flex-wrap:wrap;gap:6px;direction:ltr;margin:6px 0}
+.rcards>.tk{--w:42px}
+.rv .hands{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat>div{background:var(--panel2);border-radius:12px;padding:8px 4px}
+.stat b{display:block;font-family:var(--disp);font-size:24px;font-weight:400;color:var(--acc)}
+.stat span{font-size:12px;color:var(--muted)}
+.pchip{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:2px 8px;border-radius:12px;border:1px solid var(--line);margin:2px}
+.persona{text-align:center}
+.persona>img{width:110px;height:110px;border-radius:50%;border:3px solid var(--acc);object-fit:cover}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.fast *{animation-duration:0s!important;transition-duration:0s!important}
+</style>
+</head>
+<body>
+<!-- HOME -->
+<section class="scr on" id="home">
+  <div class="hero">
+    <div class="quickset">
+      <button id="qTheme" aria-label="theme">🎨</button>
+      <button id="qMode" aria-label="day/night">🌓</button>
+      <button id="qAbout" aria-label="about">ℹ️</button>
+    </div>
+    <div class="fan" id="homeFan"></div>
+    <div class="wordmark">Tricky<i>Nest</i></div>
+    <div class="sub" data-t="subtitle"></div>
+    <p class="muted tagline" data-t="tagline"></p>
+  </div>
+  <div class="wrap">
+    <div class="modes" id="resumeBox"></div>
+    <div class="modes">
+      <button class="mode prime" id="mCpu"><span class="ic">🤖</span><span><b data-t="mCpu"></b><span data-t="mCpuD"></span></span></button>
+      <button class="mode" id="mHot"><span class="ic">📱</span><span><b data-t="mHot"></b><span data-t="mHotD"></span></span></button>
+      <button class="mode" id="mNet"><span class="ic">🌐</span><span><b data-t="mNet"></b><span data-t="mNetD"></span></span></button>
+    </div>
+    <div class="tools">
+      <button id="tRules"><i>📖</i><span data-t="rules"></span></button>
+      <button id="tStats"><i>📊</i><span data-t="stats"></span></button>
+      <button id="tReplays"><i>🎬</i><span data-t="replays"></span></button>
+      <button id="tSettings"><i>⚙️</i><span data-t="settings"></span></button>
+    </div>
+    <div class="badge">AppNest · <b>TrickyNest</b> · <span class="ltr" id="verLbl"></span></div>
+  </div>
+</section>
+
+<!-- SETUP (vs computer / one phone) -->
+<section class="scr" id="setup">
+  <div class="bar"><button class="back" data-home></button><h2 id="setupTitle"></h2></div>
+  <div class="wrap" id="setupBody"></div>
+</section>
+
+<!-- ONLINE -->
+<section class="scr" id="online">
+  <div class="bar"><button class="back" id="netBack"></button><h2 data-t="mNet"></h2><span class="net" id="netPill"></span></div>
+  <div class="wrap" id="netBody"></div>
+</section>
+
+<!-- GAME -->
+<section class="scr" id="game">
+  <div class="gtop">
+    <button class="back" id="gBack"></button>
+    <div class="ttl"><b id="gTitle"></b><span id="gSub"></span></div>
+    <span class="net hide" id="gNet"></span>
+    <button class="ib" id="gScore" aria-label="scores">🏆</button>
+    <button class="ib" id="gMenu" aria-label="menu">⋯</button>
+  </div>
+  <div class="opps" id="opps"></div>
+  <div class="table" id="table">
+    <div class="status" id="status"></div>
+    <div class="tmid">
+      <div class="dirw" id="dirw"><svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M40 20 A80 34 0 0 1 160 20"/><path d="M152 10 L161 20 L149 26"/><path d="M160 80 A80 34 0 0 1 40 80"/><path d="M48 90 L39 80 L51 74"/></svg></div>
+      <div class="deckbox" id="deckbox"><div class="dstack" id="deckStack"></div><div class="lb" id="deckLb"></div></div>
+      <div class="pilebox" id="pilebox"><div class="pile" id="pile"></div><div class="lb colorline" id="colorLine"></div></div>
+    </div>
+    <div class="seqbar hide" id="seqBar"></div>
+    <div class="lastact" id="lastact"></div>
+    <div class="stamp hide" id="stamp"><b></b></div>
+  </div>
+  <div class="hand">
+    <div class="hinfo"><span class="cnt" id="myCnt"></span><span class="muted" id="myScore"></span></div>
+    <div class="mycards" id="cards"></div>
+  </div>
+  <div class="gbar" id="gbar">
+    <button class="btn" id="bHint" aria-label="hint">💡</button>
+    <button class="btn grow" id="bDraw"></button>
+    <button class="btn grow clb hide" id="bClose"></button>
+    <button class="btn lcb" id="bLast"></button>
+  </div>
+  <div class="voice hide" id="voice">
+    <button class="btn ptt" id="vPtt"></button>
+    <button class="btn vbtn" id="vOpen">🔊</button>
+    <button class="btn rec" id="vRec">⏺</button>
+    <button class="btn" id="vEmo">😀</button>
+  </div>
+</section>
+
+<!-- SETTINGS / STATS / REPLAYS / RULES / ABOUT -->
+<section class="scr" id="settings"><div class="bar"><button class="back" data-home></button><h2 data-t="settings"></h2></div><div class="wrap" id="setBody"></div></section>
+<section class="scr" id="stats"><div class="bar"><button class="back" data-home></button><h2 data-t="stats"></h2></div><div class="wrap" id="statBody"></div></section>
+<section class="scr" id="replays"><div class="bar"><button class="back" data-home></button><h2 data-t="replays"></h2></div><div class="wrap" id="repBody"></div></section>
+<section class="scr" id="rules"><div class="bar"><button class="back" data-home></button><h2 data-t="rules"></h2></div><div class="wrap rules" id="rulesBody"></div></section>
+<section class="scr" id="about"><div class="bar"><button class="back" data-home></button><h2 data-t="about"></h2></div><div class="wrap" id="aboutBody"></div></section>
+<div id="ovs"></div>
+<div id="bubbles"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/* ---- nestlink.js ---- */
+/* =====================================================================
+   NestLink 1.1 — AppNest online multiplayer module (WebRTC via PeerJS)
+   One file, drop into any AppNest game. No server of our own:
+   - a public PeerJS server only introduces the phones; game data, voice
+     and voice messages then travel directly phone-to-phone.
+   - star layout: the host is seat 0 and relays messages between guests,
+     so 2–6 players work; voice is a direct mesh (good up to ~4–5).
+   - every game message is sequenced and re-sent after a reconnect.
+   The game owns the session object (persist it with the game state) and
+   receives events through callbacks. See NESTLINK.md for the API.
+   1.1: sendTo(seat, d) — a private message to one seat only (card games:
+        the host deals each player only their own cards). Compatible with 1.0.
+        Heartbeat: a phone that vanished (app closed, no signal) is marked offline
+        within ~10 s instead of looking connected forever.
+        After a reconnect, if the other side already got more messages than we
+        remember sending (we restored an older saved session), numbering continues
+        after theirs instead of being silently ignored.
+   ===================================================================== */
+const NestLink = (() => {
+  const CDNS = ['https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js', 'https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js'];
+  const ICE = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' }];
+  const AB = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const genCode = (n = 5) => Array.from({ length: n }, () => AB[Math.floor(Math.random() * AB.length)]).join('');
+  const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  function loadScript(u) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = u; s.onload = res; s.onerror = rej; document.head.appendChild(s); setTimeout(rej, 12000); }); }
+  async function loadPeer() { if (window.Peer) return true; for (const u of CDNS) { try { await loadScript(u); if (window.Peer) return true; } catch (e) {} } return false; }
+  const b64 = buf => { let s = '', a = new Uint8Array(buf); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
+  const unb64 = s => { const b = atob(s), a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; };
+
+  function create(opt) {
+    const L = { status: 'off', lastErr: null, peer: null, conns: {}, retry: null, chunks: {}, calls: {}, audio: {}, mic: null, talking: false, openMic: false, rec: null, seen: {}, hb: {}, hbT: null };
+    let S = null;                                         // the session — owned and persisted by the game
+    const ev = (k, ...a) => { try { opt[k] && opt[k](...a); } catch (e) { console.error(e); } };
+    const persist = () => ev('persist', S);
+    const roomId = c => (opt.app || 'nest') + '-v1-' + c.toLowerCase();
+    const max = () => opt.maxPlayers || 2;
+    const isHost = () => S && S.role === 'host';
+    function peerOpts() {
+      const q = new URLSearchParams(location.search), o = { debug: 0, config: { iceServers: opt.iceServers || ICE } };
+      if (q.get('peerhost')) { o.host = q.get('peerhost'); o.port = +(q.get('peerport') || 9000); o.path = '/'; o.secure = false; }   // test servers only
+      return o;
+    }
+    function setStatus(st, err) { L.status = st; if (err !== undefined) L.lastErr = err; ev('onStatus', st, L.lastErr); }
+    const link = seat => S.links[seat] || (S.links[seat] = { seq: 0, lastIn: 0, out: [] });
+    const rosterEntry = seat => S.roster.find(p => p.seat === seat);
+    function rawTo(seat, m) { const c = L.conns[seat]; try { if (c && c.open) c.send(m); } catch (e) {} }
+    function rawAll(m, except) { for (const s in L.conns) if (+s !== except) rawTo(+s, m); }
+
+    /* ---------- starting ---------- */
+    async function start(session) {
+      close(true); S = session; persist();
+      L.hbT = setInterval(beat, 3000);                   // after close(), which clears it
+      setStatus('connecting');
+      if (!(await loadPeer())) { setStatus('error', 'load'); return false; }
+      const peer = L.peer = new Peer(isHost() ? roomId(S.code) : undefined, peerOpts());
+      peer.on('open', id => {
+        S.pid = id; if (isHost()) { const me = rosterEntry(0); if (me) { me.pid = id; me.online = true; } }
+        persist(); setStatus(isHost() ? 'waiting' : 'connecting'); if (!isHost()) connectHost();
+      });
+      peer.on('connection', c => { if (isHost()) attach(c, null); });
+      peer.on('call', onCall);
+      peer.on('disconnected', () => setTimeout(() => { try { if (L.peer === peer && !peer.destroyed) peer.reconnect(); } catch (e) {} }, 1500));
+      peer.on('error', e => {
+        const t = e && e.type;
+        if (t === 'unavailable-id') {                     // room id still held (e.g. after reload) — new code while nobody joined, else retry
+          if (S.roster.length < 2) { S.code = genCode(); persist(); ev('onCode', S.code); }
+          setTimeout(() => start(S), S.roster.length < 2 ? 300 : 4000); return;
+        }
+        if (t === 'peer-unavailable') { setStatus('notfound', 'nf'); scheduleRetry(); return; }
+        if (/network|server-error|socket/.test(t || '')) setStatus('error', 'net');
+      });
+      return true;
+    }
+    function host(code) {
+      return start({ role: 'host', code: code || genCode(), seat: 0, cid: uid(), roster: [{ seat: 0, name: opt.name ? opt.name() : '', online: true, cid: null, voice: false }], links: {} });
+    }
+    function join(code) { return start({ role: 'guest', code: code.toUpperCase(), seat: null, cid: uid(), roster: [], links: {} }); }
+    function resume(session) { return start(session); }
+    function scheduleRetry() { clearTimeout(L.retry); if (S && !isHost() && !(L.conns[0] && L.conns[0].open)) L.retry = setTimeout(connectHost, 3000); }
+    function connectHost() { if (!L.peer || L.peer.destroyed || (L.conns[0] && L.conns[0].open)) return; attach(L.peer.connect(roomId(S.code), { reliable: true, serialization: 'json' }), 0); scheduleRetry(); }
+
+    /* ---------- connections ---------- */
+    function attach(c, seat) {
+      let mySeat = seat;                                  // the seat at the other end of this connection
+      const onOpen = () => {
+        if (!isHost()) { L.conns[0] = c; rawTo(0, { t: 'hi', cid: S.cid, name: opt.name ? opt.name() : '', have: link(0).lastIn, v: opt.version, hb: 1 }); }
+      };
+      if (c.open) onOpen(); else c.on('open', onOpen);
+      c.on('data', m => {
+        if (!m || !m.t) return;
+        const key = isHost() ? mySeat : 0;                // 1.1 heartbeat: remember when we last heard from them
+        if (key != null) L.seen[key] = Date.now();
+        if (m.t === 'ping') { if (key != null) L.hb[key] = 1; return; }
+        if (isHost() && m.t === 'hi') {                   // a guest introduces itself → give it a seat (same seat when it comes back)
+          let p = S.roster.find(x => x.cid === m.cid);
+          if (!p) {
+            if (S.roster.length >= max()) { try { c.send({ t: 'full' }); c.close(); } catch (e) {} return; }
+            let s = 1; while (S.roster.some(x => x.seat === s)) s++;
+            p = { seat: s, cid: m.cid, name: '', online: true, voice: false }; S.roster.push(p); S.roster.sort((a, b) => a.seat - b.seat);
+            ev('onJoin', s);
+          }
+          mySeat = p.seat; p.name = (m.name || '').slice(0, 20); p.online = true; p.pid = c.peer;
+          if ((m.have || 0) > link(mySeat).seq) link(mySeat).seq = m.have;   // 1.1: we restored an older session — keep numbering after what they already got
+          if (L.conns[mySeat] && L.conns[mySeat] !== c) { try { L.conns[mySeat].close(); } catch (e) {} }
+          L.conns[mySeat] = c; L.seen[mySeat] = Date.now(); L.hb[mySeat] = m.hb ? 1 : 0;   // 1.1 phones announce the heartbeat
+          rawTo(mySeat, { t: 'hi', seat: mySeat, have: link(mySeat).lastIn, roster: S.roster, v: opt.version, hb: 1 });
+          link(mySeat).out.filter(x => x.seq > (m.have || 0)).forEach(x => rawTo(mySeat, x));
+          if (m.v && opt.version && m.v.split('.')[0] !== opt.version.split('.')[0]) ev('onVersion', m.v);
+          persist(); broadcastRoster(); setStatus('open'); callEveryone();
+          return;
+        }
+        if (!isHost() && m.t === 'hi') {
+          S.seat = m.seat; S.roster = m.roster || []; L.seen[0] = Date.now(); L.hb[0] = m.hb ? 1 : 0;
+          if ((m.have || 0) > link(0).seq) link(0).seq = m.have;            // 1.1: same protection on the guest side
+          persist();
+          link(0).out.filter(x => x.seq > (m.have || 0)).forEach(x => rawTo(0, x));
+          if (m.v && opt.version && m.v.split('.')[0] !== opt.version.split('.')[0]) ev('onVersion', m.v);
+          clearTimeout(L.retry); setStatus('open'); ev('onRoster', S.roster); callEveryone(); return;
+        }
+        if (m.t === 'full') { setStatus('full', 'full'); close(true); return; }
+        onData(m, isHost() ? mySeat : 0);
+      });
+      const gone = () => {
+        if (isHost()) { if (mySeat == null || L.conns[mySeat] !== c) return; delete L.conns[mySeat]; const p = rosterEntry(mySeat); if (p) p.online = false; persist(); broadcastRoster(); setStatus(Object.keys(L.conns).length ? 'open' : 'waiting'); }
+        else { if (L.conns[0] !== c) return; delete L.conns[0]; setStatus('reconnecting'); scheduleRetry(); }
+        stopAudioFrom(mySeat);
+      };
+      c.on('close', gone); c.on('error', gone);
+    }
+    function broadcastRoster() { if (!isHost()) return; rawAll({ t: 'roster', roster: S.roster }); ev('onRoster', S.roster); }
+
+    /* ---------- messages ---------- */
+    function onData(m, via) {
+      if (m.t === 'roster') { S.roster = m.roster; persist(); ev('onRoster', S.roster); callEveryone(); return; }
+      if (m.t === 'need') { link(via).out.filter(x => x.seq > m.have).forEach(x => rawTo(via, x)); return; }
+      if (m.t === 'emo' || m.t === 'talk' || m.t === 'vm') {
+        if (isHost()) rawAll(m, via);                     // relay to the other guests
+        if (m.t === 'emo') ev('onEmoji', m.e, m.from);
+        else if (m.t === 'talk') { const p = rosterEntry(m.from); if (p) p.talking = m.on; ev('onTalk', m.from, m.on); }
+        else gotChunk(m);
+        return;
+      }
+      if (m.t === 'voice') { const p = rosterEntry(m.from); if (p) p.voice = m.on; if (isHost()) { rawAll(m, via); broadcastRoster(); } callEveryone(); return; }
+      if (m.t !== 'm') return;
+      const lk = link(via);
+      if (m.seq <= lk.lastIn) return;
+      if (m.seq > lk.lastIn + 1) { rawTo(via, { t: 'need', have: lk.lastIn }); return; }
+      lk.lastIn = m.seq; persist();
+      if (isHost() && max() > 2 && !m.p) for (const p of S.roster) if (p.seat !== 0 && p.seat !== m.from) seqTo(p.seat, m.d, m.from);
+      ev('onMessage', m.d, m.from);
+    }
+    function seqTo(seat, d, from, priv) {
+      const lk = link(seat), m = { t: 'm', seq: ++lk.seq, from, d }; if (priv) m.p = 1;
+      lk.out.push(m); if (lk.out.length > 300) lk.out.splice(0, lk.out.length - 300);
+      rawTo(seat, m);
+    }
+    function send(d) {                                    // reliable, ordered, reaches every other player
+      if (!S) return;
+      if (isHost()) { for (const p of S.roster) if (p.seat !== 0) seqTo(p.seat, d, 0); }
+      else seqTo(0, d, S.seat);
+      persist();
+    }
+    function sendTo(seat, d) {                            // private: host → one guest, or guest → host only (not relayed)
+      if (!S || seat === S.seat) return;
+      if (isHost()) { if (S.roster.some(p => p.seat === seat)) seqTo(seat, d, 0, true); }
+      else seqTo(0, d, S.seat, true);
+      persist();
+    }
+    function emoji(e) { if (S) rawAll({ t: 'emo', e, from: S.seat }); }
+    const isOpen = () => !!S && (isHost() ? Object.values(L.conns).some(c => c.open) : !!(L.conns[0] && L.conns[0].open));
+
+    /* ---------- voice: push-to-talk / open mic (direct mesh) ---------- */
+    async function micOn() {
+      if (L.mic) return true;
+      try { L.mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+      catch (e) { ev('onMicError', e && e.name); return false; }
+      L.mic.getAudioTracks().forEach(t => t.enabled = L.openMic);
+      const me = rosterEntry(S.seat); if (me) me.voice = true;
+      const m = { t: 'voice', on: true, from: S.seat }; rawAll(m);
+      callEveryone(); return true;
+    }
+    function callEveryone() {                             // each phone with a mic sends its own one-way audio call to every other phone
+      if (!L.mic || !L.peer || !S) return;
+      for (const p of S.roster) {
+        if (p.seat === S.seat || !p.online || !p.pid) continue;
+        const c = L.calls[p.seat]; if (c && !c._dead) continue;
+        try { const call = L.peer.call(p.pid, L.mic, { metadata: { seat: S.seat } }); L.calls[p.seat] = call; call.on('close', () => { call._dead = true; }); call.on('error', () => { call._dead = true; }); } catch (e) {}
+      }
+    }
+    function onCall(call) {
+      call.answer();                                      // receive only — our own audio goes out on our own call
+      call.on('stream', st => {
+        const seat = call.metadata && call.metadata.seat;
+        let a = L.audio[seat]; if (!a) { a = L.audio[seat] = document.createElement('audio'); a.autoplay = true; a.setAttribute('playsinline', ''); a.style.display = 'none'; document.body.appendChild(a); }
+        a.srcObject = st; const p = a.play(); if (p && p.catch) p.catch(() => ev('onAudioBlocked'));
+      });
+    }
+    function stopAudioFrom(seat) { const a = L.audio[seat]; if (a) { a.srcObject = null; a.remove(); delete L.audio[seat]; } const c = L.calls[seat]; if (c) { try { c.close(); } catch (e) {} delete L.calls[seat]; } }
+    async function talk(on) {
+      if (on && !(await micOn())) return false;
+      if (!L.mic) return false;
+      L.talking = on || L.openMic; L.mic.getAudioTracks().forEach(t => t.enabled = L.talking);
+      rawAll({ t: 'talk', on: L.talking, from: S.seat }); return true;
+    }
+    async function setOpenMic(on) { L.openMic = on; if (on && !(await micOn())) { L.openMic = false; return false; } return talk(on); }
+
+    /* ---------- voice messages ---------- */
+    async function recStart(maxSec) {
+      if (L.rec || !(await micOn())) return false;
+      const track = L.mic.getAudioTracks()[0].clone(); track.enabled = true;
+      const st = new MediaStream([track]), mime = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/mp4'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+      let r; try { r = new MediaRecorder(st, mime ? { mimeType: mime, audioBitsPerSecond: 24000 } : undefined); } catch (e) { ev('onMicError', 'rec'); return false; }
+      const parts = [], t0 = Date.now();
+      L.rec = { r, track, t0, timer: setTimeout(() => recStop(), (maxSec || 20) * 1000) };
+      r.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); };
+      r.onstop = async () => {
+        track.stop();
+        const dur = Math.round((Date.now() - t0) / 100) / 10, blob = new Blob(parts, { type: r.mimeType || mime || 'audio/webm' });
+        if (L.rec && L.rec.cancel || dur < .4 || !blob.size) { L.rec = null; ev('onRecState', false); return; }
+        L.rec = null; ev('onRecState', false);
+        const data = b64(await blob.arrayBuffer()), id = uid(), CH = 12000, n = Math.ceil(data.length / CH);
+        for (let i = 0; i < n; i++) rawAll({ t: 'vm', id, i, n, dur, mime: blob.type, from: S.seat, data: data.slice(i * CH, (i + 1) * CH) });
+        ev('onVoiceMsg', URL.createObjectURL(blob), dur, S.seat, true);
+      };
+      r.start(); ev('onRecState', true, t0); return true;
+    }
+    function recStop(cancel) { if (!L.rec) return; clearTimeout(L.rec.timer); L.rec.cancel = !!cancel; try { L.rec.r.stop(); } catch (e) {} }
+    function gotChunk(m) {
+      const c = L.chunks[m.id] || (L.chunks[m.id] = { parts: [], got: 0, t: Date.now() });
+      if (c.parts[m.i] == null) { c.parts[m.i] = m.data; c.got++; }
+      if (c.got === m.n) { delete L.chunks[m.id]; const blob = new Blob([unb64(c.parts.join(''))], { type: m.mime || 'audio/webm' }); ev('onVoiceMsg', URL.createObjectURL(blob), m.dur, m.from, false); }
+      for (const k in L.chunks) if (Date.now() - L.chunks[k].t > 60000) delete L.chunks[k];
+    }
+
+    /* ---------- 1.1 heartbeat ----------
+       A phone that closes the app or loses signal often never fires 'close'. Every 3 s we ping
+       everyone; a peer that pings (1.1+) but has been silent for 10 s is treated as gone.
+       Peers on 1.0 never ping, so they are never dropped by mistake. */
+    function beat() {
+      if (!S) return;
+      const now = Date.now();
+      for (const k in L.conns) {
+        const s = +k; rawTo(s, { t: 'ping' });
+        if (!L.hb[s] || now - (L.seen[s] || now) < 10000) continue;
+        L.hb[s] = 0; const c = L.conns[s]; delete L.conns[s]; try { c.close(); } catch (e) {}
+        stopAudioFrom(s);
+        if (isHost()) { const p = rosterEntry(s); if (p) p.online = false; persist(); broadcastRoster(); setStatus(Object.keys(L.conns).length ? 'open' : 'waiting'); }
+        else { setStatus('reconnecting'); scheduleRetry(); }
+      }
+    }
+
+    /* ---------- closing ---------- */
+    function close(keepSession) {
+      clearTimeout(L.retry); clearInterval(L.hbT); L.hbT = null;
+      Object.keys(L.audio).forEach(s => stopAudioFrom(+s));
+      for (const s in L.conns) { try { L.conns[s].close(); } catch (e) {} }
+      L.conns = {};
+      if (L.mic) { L.mic.getTracks().forEach(t => t.stop()); L.mic = null; }
+      L.calls = {}; L.talking = false;
+      try { if (L.peer) L.peer.destroy(); } catch (e) {}
+      L.peer = null; if (!keepSession) S = null; setStatus('off');
+    }
+
+    return {
+      host, join, resume, close, send, sendTo, emoji, isOpen, talk, setOpenMic, recStart, recStop,
+      get status() { return L.status; }, get error() { return L.lastErr; }, get session() { return S; },
+      get seat() { return S ? S.seat : null; }, get roster() { return S ? S.roster : []; },
+      get micReady() { return !!L.mic; }, get talking() { return L.talking; }, get openMic() { return L.openMic; }, get recording() { return !!L.rec; },
+      inviteURL: () => location.origin + location.pathname + '?join=' + (S ? S.code : ''),
+      _L: L
+    };
+  }
+  return { create, genCode, loadPeer };
+})();
+
+/* ---- engine.js ---- */
+/* =====================================================================
+   TrickyNest engine — pure rules, no DOM. Runs in the browser and in Node.
+   One deck = 120 cards (id % 120 → definition), two decks above 4 players.
+   Per colour (4): numbers 1–9 ×2, stop ×2, reverse ×2, +2 ×2, plus ×2, run ×2.
+   Wild: change colour ×4, king ×2, super run ×2.
+   The engine owns everything (deck + hands). Players only ever get
+   view(G, seat): their own hand + public information.
+   ===================================================================== */
+const TE = (() => {
+  const STOP = 10, REV = 11, P2 = 12, PLUS = 13, SEQ = 14, CHG = 15, KING = 16, SSEQ = 17;
+  const BASE = [];
+  for (let c = 0; c < 4; c++) {
+    for (let n = 1; n <= 9; n++) { BASE.push({ c, t: n }); BASE.push({ c, t: n }); }
+    for (const t of [STOP, REV, P2, PLUS, SEQ]) { BASE.push({ c, t }); BASE.push({ c, t }); }
+  }
+  for (let i = 0; i < 4; i++) BASE.push({ c: -1, t: CHG });
+  for (let i = 0; i < 2; i++) BASE.push({ c: -1, t: KING });
+  for (let i = 0; i < 2; i++) BASE.push({ c: -1, t: SSEQ });
+  const DECK = BASE.length;                                      // 120
+  const col = id => BASE[id % DECK].c, typ = id => BASE[id % DECK].t;
+  const isNum = id => typ(id) <= 9, isWild = id => typ(id) >= CHG, isAct = id => typ(id) > 9;
+  const pts = id => isNum(id) ? typ(id) : isWild(id) ? 20 : 15;
+  const handPts = h => h.reduce((a, c) => a + pts(c), 0);
+
+  const PRESETS = {
+    classic: { stack2: true, kingStops2: true, lastCard: true, finishAction: true, cond2: false, draw: 'one', scoring: 'single' },
+    home: { stack2: true, kingStops2: true, lastCard: true, finishAction: true, cond2: true, draw: 'one', scoring: 'single' },
+    brutal: { stack2: true, kingStops2: false, lastCard: true, finishAction: false, cond2: true, draw: 'until', scoring: 'points' }
+  };
+  const DEFAULTS = Object.assign({ preset: 'home', lcPen: 2, target: 100, hand: 8 }, PRESETS.home);
+
+  /* ---------- seeded RNG (state is one 32-bit int → saved with the round) ---------- */
+  function rnext(R) {
+    R.rs = (R.rs + 0x6D2B79F5) >>> 0; let t = R.rs;
+    t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+  function shuffle(a, R) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnext(R) * (i + 1)); const x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+
+  /* ---------- what may be played (works on the engine state and on a view) ----------
+     S = { draw2, seq, cont, color, top }                                                  */
+  function canPlay(S, cfg, id) {
+    const t = typ(id), c = col(id);
+    if (S.draw2 > 0) return (t === P2 && cfg.stack2) || (t === KING && cfg.kingStops2);
+    if (S.seq) return c === S.seq.c;                                   // inside a run: only that colour
+    if (S.cont === 'king') return true;                                // after a king: anything
+    if (t >= CHG) return true;                                         // wild
+    if (t === SEQ) return c === S.color;                               // a run opens only on its own colour
+    const tt = typ(S.top);
+    return c === S.color || (t === tt && tt < CHG && tt !== SEQ);
+  }
+  const stateOf = R => ({ draw2: R.draw2, seq: R.seq, cont: R.cont, color: R.color, top: R.pile[R.pile.length - 1] });
+
+  /* ---------- game ---------- */
+  function newGame(players, cfg, seed) {
+    const G = {
+      v: 1, cfg: Object.assign({}, DEFAULTS, cfg || {}),
+      players: players.map(p => ({ name: p.name || '', kind: p.kind || 'human', lvl: p.lvl || 0, av: p.av || 0, pe: p.pe == null ? -1 : p.pe, score: 0, wins: p.wins || 0 })),
+      rn: 0, starter: 0, seed: (seed >>> 0) || ((Math.random() * 4294967296) >>> 0), history: [], log: [], over: false, winner: null, round: null
+    };
+    G.starter = G.seed % G.players.length;
+    startRound(G);
+    return G;
+  }
+  function startRound(G) {
+    G.rn++;
+    const n = G.players.length, seed = (G.seed + Math.imul(G.rn, 0x9E3779B1)) >>> 0, decks = n > 4 ? 2 : 1;
+    const R = { seed, rs: seed, starter: G.starter, pre: G.players.map(p => p.score), deck: [], hands: G.players.map(() => []), pile: [], color: 0, dir: 1, turn: G.starter,
+      draw2: 0, seq: null, cont: null, lcArmed: false, lastPlay: false, pendWin: -1, lacks: G.players.map(() => 0), lcSaid: G.players.map(() => 0), acts: [], ev: [], end: null, turns: 0, evn: 0 };
+    for (let i = 0; i < DECK * decks; i++) R.deck.push(i);
+    shuffle(R.deck, R);
+    for (let k = 0; k < G.cfg.hand; k++) for (let s = 0; s < n; s++) R.hands[(G.starter + s) % n].push(R.deck.pop());
+    // the opening card is always a number (action cards go back under the deck)
+    let first = R.deck.pop(), guard = 0;
+    while (!isNum(first) && guard++ < 200) { R.deck.unshift(first); first = R.deck.pop(); }
+    R.pile.push(first); R.color = col(first);
+    G.round = R;
+    return R;
+  }
+  const step = (G, s, k) => { const n = G.players.length, d = G.round.dir; return (((s + d * k) % n) + n) % n; };
+  function reshuffle(R) {
+    if (R.deck.length || R.pile.length < 2) return;
+    const top = R.pile.pop(); R.deck = shuffle(R.pile, R); R.pile = [top];
+    R.ev.push({ e: 'shuf', i: ++R.evn });
+  }
+  function give(R, seat, n) {
+    let got = 0;
+    for (let i = 0; i < n; i++) { if (!R.deck.length) reshuffle(R); if (!R.deck.length) break; R.hands[seat].push(R.deck.pop()); got++; }
+    return got;
+  }
+  const live = (G, seat) => { const R = G.round; return R && !R.end && !G.over && R.turn === seat; };
+  const evp = (R, o) => { o.i = ++R.evn; R.ev.push(o); if (R.ev.length > 40) R.ev.splice(0, R.ev.length - 40); };
+
+  function endTurn(G, seat, skip) {
+    const R = G.round, cfg = G.cfg;
+    if (cfg.lastCard && R.hands[seat].length === 1 && R.lastPlay && !R.lcArmed) {
+      const n = give(R, seat, cfg.lcPen); evp(R, { s: seat, e: 'lcpen', n });
+    }
+    if (R.hands[seat].length !== 1) R.lcSaid[seat] = 0;
+    R.lcArmed = false; R.cont = null; R.seq = null; R.lastPlay = false;
+    R.turns++;
+    R.turn = step(G, seat, 1 + (skip || 0));
+    // a player who went out on a +2 has no answer when the chain comes back: he takes it all
+    if (R.pendWin >= 0 && R.turn === R.pendWin && R.draw2 > 0) {
+      const w = R.pendWin, n = give(R, w, R.draw2); R.draw2 = 0; R.pendWin = -1;
+      evp(R, { s: w, e: 'back', n });
+      R.turns++; R.turn = step(G, w, 1);
+    }
+    if (R.turns > 3000) stall(G);
+  }
+  function stall(G) { const R = G.round; let b = 0; R.hands.forEach((h, s) => { if (handPts(h) < handPts(R.hands[b])) b = s; }); endRound(G, b, true); }
+
+  // the effect of the card that "counts" (a single play, or the last card of a run)
+  function resolve(G, seat, id) {
+    const R = G.round, cfg = G.cfg, t = typ(id), hand = R.hands[seat];
+    if (t === KING) {
+      if (R.draw2 > 0) { R.draw2 = 0; if (R.pendWin >= 0 && R.pendWin !== seat) return endRound(G, R.pendWin); }
+      if (!hand.length) {
+        if (cfg.finishAction) return endRound(G, seat);
+        const n = give(R, seat, 1); evp(R, { s: seat, e: 'fdraw', n }); R.lastPlay = false;
+      }
+      R.cont = 'king'; return;
+    }
+    if (t === PLUS) {
+      if (!hand.length) { const n = give(R, seat, 1); evp(R, { s: seat, e: 'pdraw', n }); R.lastPlay = false; return endTurn(G, seat, 0); }
+      R.cont = 'plus'; return;
+    }
+    let skip = 0;
+    if (t === STOP) skip = 1;
+    if (t === REV && G.players.length > 2) R.dir = -R.dir;
+    if (t === P2) R.draw2 = (cfg.stack2 ? R.draw2 : 0) + 2;
+    if (!hand.length) {
+      if (isAct(id) && !cfg.finishAction) { const n = give(R, seat, 1); evp(R, { s: seat, e: 'fdraw', n }); R.lastPlay = false; return endTurn(G, seat, skip); }
+      if (t === P2 && cfg.cond2) { R.pendWin = seat; evp(R, { s: seat, e: 'pend' }); return endTurn(G, seat, skip); }
+      return endRound(G, seat);
+    }
+    endTurn(G, seat, skip);
+  }
+  function closeSeq(G, seat, auto) {
+    const R = G.round, S = R.seq; R.seq = null;
+    evp(R, { s: seat, e: 'close', auto: auto ? 1 : 0, n: S.n });
+    if (S.last == null) {                                              // only the opener: no effect
+      if (!R.hands[seat].length) {
+        if (G.cfg.finishAction) return endRound(G, seat);
+        const n = give(R, seat, 1); evp(R, { s: seat, e: 'fdraw', n }); R.lastPlay = false;
+      }
+      return endTurn(G, seat, 0);
+    }
+    resolve(G, seat, S.last);
+  }
+
+  /* ---------- actions (each is one entry in the replay) ---------- */
+  function play(G, seat, id, color) {
+    if (!live(G, seat)) return { ok: false, err: 'turn' };
+    const R = G.round, hand = R.hands[seat], i = hand.indexOf(id);
+    if (i < 0) return { ok: false, err: 'card' };
+    if (!canPlay(stateOf(R), G.cfg, id)) return { ok: false, err: 'rule' };
+    const t = typ(id);
+    if ((t === CHG || t === SSEQ) && !(color >= 0 && color <= 3)) return { ok: false, err: 'color' };
+    hand.splice(i, 1); R.pile.push(id); R.lastPlay = true;
+    R.acts.push({ s: seat, p: id, c: (t === CHG || t === SSEQ) ? color : undefined });
+    if (col(id) >= 0) R.lacks[seat] &= ~(1 << col(id));
+    evp(R, { s: seat, e: 'play', id, c: (t === CHG || t === SSEQ) ? color : undefined, inSeq: R.seq ? 1 : 0 });
+    if (R.seq) {                                                       // inside a run
+      R.seq.n++; R.seq.last = id;
+      if (!hand.some(x => col(x) === R.seq.c)) closeSeq(G, seat, true);
+      return { ok: true };
+    }
+    R.cont = null;
+    if (t === SEQ || t === SSEQ) {
+      R.color = t === SSEQ ? color : col(id);
+      R.seq = { c: R.color, n: 0, last: null, by: seat };
+      if (!hand.some(x => col(x) === R.seq.c)) closeSeq(G, seat, true);
+      return { ok: true };
+    }
+    if (t === CHG) R.color = color;
+    else if (t !== KING) R.color = col(id);
+    resolve(G, seat, id);
+    return { ok: true };
+  }
+  function draw(G, seat) {
+    if (!live(G, seat)) return { ok: false, err: 'turn' };
+    const R = G.round, cfg = G.cfg;
+    if (R.seq) return { ok: false, err: 'seq' };
+    if (R.cont === 'must') return { ok: false, err: 'must' };
+    R.acts.push({ s: seat, d: 1 });
+    R.lastPlay = false;
+    if (R.draw2 > 0) {
+      const n = give(R, seat, R.draw2); R.draw2 = 0; evp(R, { s: seat, e: 'take', n });
+      if (R.pendWin >= 0 && R.pendWin !== seat) { endRound(G, R.pendWin); return { ok: true, n }; }
+      endTurn(G, seat, 0); return { ok: true, n };
+    }
+    if (cfg.draw === 'until' && !R.cont) {
+      R.lacks[seat] |= (1 << R.color);
+      let n = 0, hit = false;
+      for (;;) {
+        if (!R.deck.length) reshuffle(R);
+        if (!R.deck.length) break;
+        const c = R.deck.pop(); R.hands[seat].push(c); n++;
+        if (canPlay(stateOf(R), cfg, c)) { hit = true; break; }
+      }
+      evp(R, { s: seat, e: 'draw', n });
+      if (hit) { R.cont = 'must'; return { ok: true, n }; }
+      endTurn(G, seat, 0); return { ok: true, n };
+    }
+    if (!R.cont) R.lacks[seat] |= (1 << R.color);
+    const n = give(R, seat, 1); evp(R, { s: seat, e: 'draw', n });
+    endTurn(G, seat, 0);
+    return { ok: true, n };
+  }
+  function close(G, seat) {
+    if (!live(G, seat)) return { ok: false, err: 'turn' };
+    const R = G.round; if (!R.seq) return { ok: false, err: 'seq' };
+    R.acts.push({ s: seat, cl: 1 });
+    closeSeq(G, seat, false);
+    return { ok: true };
+  }
+  function lastCard(G, seat) {
+    if (!live(G, seat) || !G.cfg.lastCard) return { ok: false, err: 'turn' };
+    const R = G.round; if (R.lcArmed) return { ok: false, err: 'again' };
+    R.acts.push({ s: seat, lc: 1 }); R.lcArmed = true; R.lcSaid[seat] = 1;
+    evp(R, { s: seat, e: 'lc' });
+    return { ok: true };
+  }
+  function apply(G, seat, a) {
+    if (a.p != null) return play(G, seat, a.p, a.c);
+    if (a.d) return draw(G, seat);
+    if (a.cl) return close(G, seat);
+    if (a.lc) return lastCard(G, seat);
+    return { ok: false, err: 'act' };
+  }
+
+  function endRound(G, w, stalled) {
+    const R = G.round, cfg = G.cfg, n = G.players.length;
+    const hp = R.hands.map(handPts), before = G.players.map(p => p.score), add = G.players.map(() => 0);
+    G.players[w].wins++;
+    if (cfg.scoring === 'points') for (let s = 0; s < n; s++) if (s !== w) add[s] = hp[s];
+    G.players.forEach((p, s) => p.score += add[s]);
+    R.end = { winner: w, hands: R.hands.map(h => sortHand(h)), hp, add, before, after: G.players.map(p => p.score), stalled: !!stalled };
+    G.history.push({ rn: G.rn, w, add: add.slice(), after: R.end.after.slice() });
+    G.log.push({ rn: G.rn, st: R.starter, sc: R.pre, acts: R.acts.slice() });
+    G.starter = (R.starter + 1) % n;
+    if (cfg.scoring !== 'points') { G.over = true; G.winner = w; }
+    else if (G.players.some(p => p.score >= cfg.target)) { G.over = true; G.winner = lowest(G); }
+    return { ok: true };
+  }
+  function lowest(G) { let b = 0; G.players.forEach((p, i) => { if (p.score < G.players[b].score) b = i; }); return b; }
+  function nextRound(G) { if (G.over || !G.round || !G.round.end) return false; startRound(G); return true; }
+
+  function sortHand(h) { return h.slice().sort((a, b) => { const ca = col(a) < 0 ? 9 : col(a), cb = col(b) < 0 ? 9 : col(b); return (ca - cb) || (typ(a) - typ(b)) || (a - b); }); }
+
+  /* ---------- what one seat may know ---------- */
+  function view(G, seat) {
+    const R = G.round;
+    return {
+      cfg: G.cfg, me: seat, rn: G.rn, turn: R.turn, dir: R.dir, color: R.color, starter: R.starter, turns: R.turns,
+      top: R.pile[R.pile.length - 1], under: R.pile.slice(-4, -1), deck: R.deck.length,
+      draw2: R.draw2, seq: R.seq ? { c: R.seq.c, n: R.seq.n, by: R.seq.by } : null, cont: R.cont, lcArmed: R.lcArmed, pendWin: R.pendWin,
+      players: G.players.map((p, i) => ({ name: p.name, kind: p.kind, lvl: p.lvl, av: p.av, pe: p.pe, score: p.score, wins: p.wins, count: R.hands[i].length, lacks: R.lacks[i], lc: R.lcSaid[i] && R.hands[i].length === 1 ? 1 : 0 })),
+      hand: seat >= 0 ? sortHand(R.hands[seat]) : [],
+      ev: R.ev.slice(-10), end: R.end, over: G.over, winner: G.winner, history: G.history
+    };
+  }
+  const legalV = V => V.me < 0 || V.turn !== V.me || V.end || V.over ? [] : V.hand.filter(id => canPlay(V, V.cfg, id));
+
+  /* ---------- replay: seed + actions rebuild every state ---------- */
+  function replayRound(players, cfg, gameSeed, rn, starter, scores, acts) {
+    const G = { v: 1, cfg, players: players.map((p, i) => ({ name: p.name, kind: p.kind, lvl: p.lvl, av: p.av, pe: p.pe, score: scores[i], wins: 0 })), rn: rn - 1, starter, seed: gameSeed, history: [], log: [], over: false, winner: null, round: null };
+    startRound(G);
+    const frames = [snapshot(G, null)];
+    for (const a of acts) { apply(G, a.s, a); frames.push(snapshot(G, a)); }
+    return frames;
+  }
+  function snapshot(G, a) {
+    const R = G.round;
+    return { hands: R.hands.map(h => sortHand(h)), top: R.pile[R.pile.length - 1], color: R.color, dir: R.dir, draw2: R.draw2, seq: R.seq ? { c: R.seq.c } : null, deck: R.deck.length, turn: R.turn, end: R.end, a, ev: R.ev.slice(-4) };
+  }
+
+  return { STOP, REV, P2, PLUS, SEQ, CHG, KING, SSEQ, DECK, BASE, col, typ, isNum, isWild, isAct, pts, handPts, PRESETS, DEFAULTS,
+    canPlay, newGame, startRound, nextRound, play, draw, close, lastCard, apply, view, legalV, sortHand, replayRound, shuffle, rnext, step };
+})();
+if (typeof module !== 'undefined') module.exports = TE;
+
+/* ---- bots.js ---- */
+/* =====================================================================
+   TrickyNest AI — every decision comes from view(G, seat) only:
+   own hand + what everyone saw on the table. It never peeks.
+   One call = one step of the turn (a turn can be: "last card!" → play →
+   play … → close). Levels: 0 easy · 1 medium · 2 hard · 9 "human bot" (tests).
+   Measured (home rules): medium–easy 54.5% (4,000 games), hard–medium 58% heads-up and
+   31.8% at a table of four (fair 25%), hard–"human bot" 52.5%. A Monte-Carlo expert
+   reached only 51% against hard, so it was dropped (a level that fails is not offered).
+   ===================================================================== */
+const TAI = (() => {
+  const E = (typeof TE !== 'undefined') ? TE : require('./engine.js');
+  const { STOP, REV, P2, PLUS, SEQ, CHG, KING, SSEQ } = E;
+  const nextSeat = (V, k) => { const n = V.players.length; return (((V.me + V.dir * (k || 1)) % n) + n) % n; };
+  const colorCount = (hand, c) => hand.filter(x => E.col(x) === c).length;
+  function bestColor(hand, V, avoidLacks) {
+    let b = 0, bv = -1e9;
+    for (let c = 0; c < 4; c++) {
+      let v = colorCount(hand, c) * 10 + hand.filter(x => E.col(x) === c && E.isNum(x)).length;
+      if (avoidLacks && V) { const nx = V.players[nextSeat(V)]; if (nx && (nx.lacks >> c) & 1) v += 6; }
+      if (v > bv) { bv = v; b = c; }
+    }
+    return b;
+  }
+  const HW = { p2: -2, stop2p: 0, king: -14, chg: -8, seqMin: 2, num: 4, keep: 3, run: 3 };
+  if (typeof process !== 'undefined' && process.env && process.env.HW) Object.assign(HW, JSON.parse(process.env.HW));
+  const FORGET = { 0: 0.25, 1: 0.08, 2: 0, 8: 0, 9: 0.03 };
+
+  function decide(V, lvl, rnd) {
+    rnd = rnd || Math.random;
+    const legal = E.legalV(V), hand = V.hand, cfg = V.cfg;
+    const nx = V.players[nextSeat(V)];
+    // "last card!" — before the play that leaves one card
+    if (cfg.lastCard && !V.lcArmed && hand.length <= 2 && legal.length && !V.seq) {
+      if (rnd() >= (FORGET[lvl] != null ? FORGET[lvl] : 0)) return { lc: 1 };
+    }
+    if (cfg.lastCard && !V.lcArmed && V.seq && hand.length <= 2 && legal.length && lvl >= 1) return { lc: 1 };
+    if (lvl === 8) lvl = 1;
+    if (!legal.length) return V.seq ? { cl: 1 } : { d: 1 };
+
+    if (lvl === 0) {                                   // easy: any legal card, run everything
+      const id = legal[Math.floor(rnd() * legal.length)];
+      return withColor(id, hand, V, rnd, false);
+    }
+    // ---- inside a run: numbers first, the strongest action last ----
+    if (V.seq) {
+      const rank = id => { const t = E.typ(id); return t <= 9 ? 0 : t === REV ? 1 : t === PLUS ? 2 : t === STOP ? 3 : t === P2 ? 4 : 1; };
+      let pick = legal.slice().sort((a, b) => rank(a) - rank(b))[0];
+      if (lvl >= 2) {
+        // keep a number for the end when we may not finish on an action
+        const rest = hand.filter(x => x !== pick);
+        if (!cfg.finishAction && rest.length && rest.every(x => E.col(x) === V.seq.c) && rest.every(E.isAct) && E.isNum(pick) && legal.length > 1) {
+          pick = legal.filter(E.isAct).sort((a, b) => rank(a) - rank(b))[0] || pick;
+        }
+        // nothing left of the colour but actions, and attacking the next player helps → play the attacker last (automatic)
+      }
+      return { p: pick };
+    }
+    // ---- facing +2 ----
+    if (V.draw2 > 0) {
+      const p2 = legal.filter(x => E.typ(x) === P2), k = legal.filter(x => E.typ(x) === KING);
+      if (p2.length) return { p: p2[0] };
+      if (k.length) return { p: k[0] };
+      return { d: 1 };
+    }
+    // ---- normal turn: score every legal card ----
+    let best = null, bv = -1e9;
+    const danger = nx && nx.count <= 2, danger1 = nx && nx.count === 1;
+    for (const id of legal) {
+      const t = E.typ(id), c = E.col(id), rest = hand.filter(x => x !== id);
+      let v = 0;
+      if (c >= 0) v += colorCount(rest, c) * 3;                        // stay in a colour I hold
+      if (t <= 9) v += 4 + t * 0.15;                                   // dump numbers (and high ones)
+      if (t === SEQ) { const k = colorCount(rest, c); v += k >= 2 ? 6 + k * 3 : -4; }
+      if (t === SSEQ) { const bc = bestColor(rest, V, lvl >= 2), k = colorCount(rest, bc); v += k >= 3 ? 4 + k * 3 : -10; }
+      if (t === CHG) v -= V.cont ? 2 : (lvl >= 2 ? -HW.chg : 8);
+      if (t === KING) v += lvl >= 2 ? HW.king : -14;                                         // save it as a shield
+      if (t === PLUS) v += rest.some(x => x !== id && E.canPlay({ draw2: 0, seq: null, cont: null, color: c, top: id }, cfg, x)) ? 5 : -6;
+      if (t === STOP) v += danger ? 9 : 2;
+      if (t === P2) v += danger ? 10 : (lvl >= 2 ? HW.p2 : 1);
+      if (lvl >= 2 && t === STOP && V.players.length === 2) v += HW.stop2p;            // hard keeps +2 to answer an attack
+      if (t === REV) v += 1;
+      if (lvl >= 2) {
+        if (danger1 && (t === STOP || t === P2)) v += 8;
+        if (danger && c >= 0 && (nx.lacks >> c) & 1) v += 4;            // he drew on this colour before
+        if (!cfg.finishAction && rest.length === 1 && E.isAct(rest[0]) && !E.isWild(rest[0])) v -= 6;
+        if (!cfg.finishAction && rest.length === 1 && E.isNum(rest[0])) v += 3;
+        if (rest.length === 0) v += 50;
+        // don't break the last card of a colour if a wild could follow
+        if (t === P2 && V.players.length > 2 && !danger) v -= 1;
+      } else if (lvl === 9) {
+        if (t === P2 || t === STOP) v += 3;                             // people love to attack
+        if (t === KING) v += 10;
+      }
+      if (v > bv) { bv = v; best = id; }
+    }
+    if (lvl >= 1 && V.cont !== 'must' && bv < -9 && !V.cont) return { d: 1 };     // only wild shields left — keep them
+    return withColor(best, hand, V, rnd, lvl >= 2);
+  }
+  function withColor(id, hand, V, rnd, smart) {
+    const t = E.typ(id);
+    if (t === CHG || t === SSEQ) {
+      const rest = hand.filter(x => x !== id);
+      const c = rest.length ? bestColor(rest, V, smart) : Math.floor(rnd() * 4);
+      return { p: id, c };
+    }
+    return { p: id };
+  }
+  function hint(V) { return decide(V, 2, Math.random); }
+  return { decide, hint, bestColor };
+})();
+if (typeof module !== 'undefined') module.exports = TAI;
+
+/* ---- texts.js ---- */
+/* =====================================================================
+   TrickyNest — texts. Hebrew + English complete; Russian, Spanish, Arabic:
+   menus and main buttons (anything missing falls back to English).
+   ===================================================================== */
+const LANG = {
+he: {
+  subtitle: 'תדפוק את החבר!', tagline: 'משחק הקלפים עם \u2066+2\u2069, עצור, רצף ומלך', mCpu: 'מול המחשב', mCpuD: '1 עד 5 יריבים עם אופי, שלוש רמות', mHot: 'בטלפון אחד', mHotD: '2 עד 6 שחקנים, מסך העברה בין התורות', mNet: 'אונליין עם חברים', mNetD: 'חדר עם קוד, וואטסאפ ודיבור בזמן המשחק',
+  rules: 'חוקים', stats: 'סטטיסטיקה', replays: 'ריפליי', settings: 'הגדרות', about: 'אודות', resume: 'המשך משחק', resumeNet: 'חזרה לחדר האונליין',
+  saveFail: 'השמירה נכשלה — הזיכרון בטלפון מלא', cancel: 'ביטול', ok: 'אישור', close: 'סגור', home: 'לבית', next: 'הבא', skip: 'דלג', letsPlay: 'יאללה, משחקים',
+  player: 'שחקן', you: 'אתה', host: 'מארח', points: 'נקודות', pts: '{n} נק׳', none: 'בלי', game1: 'משחק', roundN: 'סיבוב {n}', toPts: 'עד {n} נק׳', oneGame: 'משחק אחד',
+  col0: 'אדום', col1: 'צהוב', col2: 'ירוק', col3: 'כחול', colorNow: 'צבע: {c}', pickColor: 'איזה צבע?', pickColorRun: 'רצף על — באיזה צבע?', deckN: 'קופה · {n}',
+  t_stop: 'עצור', t_rev: 'שנה כיוון', t_p2: '\u2066+2\u2069', t_plus: 'פלוס', t_seq: 'רצף', t_chg: 'שנה צבע', t_king: 'מלך', t_sseq: 'רצף על', cardOf: '{t} {c}',
+  yourTurn: 'תורך — שים קלף מתאים או קח מהקופה', yourTurnD2: 'עליך \u2066+{n}\u2069! ענה ב-\u2066+2\u2069{k} או קח {n}', orKing: ' או במלך', kingFree: 'מלך! שים כל קלף שתרצה', plusMore: 'פלוס — שים עוד קלף, או קח אחד מהקופה', mustPlay: 'משכת קלף שמתאים — שים קלף',
+  seqMine: 'רצף {c}: שים עוד קלפים {c}, או סגור', seqOther: '{n} ברצף {c}…', turnOf: 'התור של {n}', thinking: '{n} חושב…', passing: 'מעבירים את הטלפון…', sending: 'שולח…', gameOver: 'המשחק נגמר', roundOver: 'הסיבוב נגמר', spectator: 'אתה צופה', spectatorNext: 'אתה צופה — תיכנס למשחק הבא',
+  draw: 'קח קלף', drawN: 'קח {n}', closeRun: 'סגור רצף', lastCard: 'קלף אחרון!', lastCardOn: '☝️ הוכרז', cardsN: '{n} קלפים', oneCard: 'קלף אחד',
+  ev_play: '{who} שם {card}', ev_playC: '{who} שם {card} ובחר {c}', ev_draw: '{who} לקח קלף', ev_drawN: '{who} לקח {n} קלפים', ev_take: '{who} לקח {n} 😩', ev_close: '{who} סגר רצף של {n}', ev_lc: '{who}: קלף אחרון! ☝️',
+  ev_lcpen: '{who} שכח "קלף אחרון!" ולקח {n} 🙈', ev_back: 'ה-\u2066+2\u2069 חזר ל{who} — לוקח {n}!', ev_pend: '{who} סיים ב-\u2066+2\u2069 — אם זה חוזר אליו, הוא לוקח הכל', ev_fdraw: '{who} סיים בקלף פעולה ולקח קלף', ev_pdraw: '{who} סיים בפלוס ולקח קלף', ev_shuf: 'הקופה נגמרה — ערבבנו מחדש',
+  notLegal: 'הקלף הזה לא מתאים עכשיו', notLegalD2: 'עליך לענות ב-\u2066+2\u2069{k} או לקחת', notLegalSeq: 'ברצף אפשר לשים רק {c}', mustPlayErr: 'משכת קלף מתאים — חייב לשים קלף', seqDrawErr: 'קודם סגור את הרצף', illegal: 'המהלך לא חוקי', lcDone: 'הכרזת — עכשיו שים את הקלף', lcOff: '"קלף אחרון!" כבוי בחוקים של המשחק הזה',
+  hintPlay: '💡 שים את {card}', hintPlayC: '💡 שים את {card} ובחר {c}', hintDraw: '💡 עדיף לקחת מהקופה', hintClose: '💡 סגור את הרצף', hintLc: '💡 נשאר לך קלף אחד אחרי המהלך — לחץ "קלף אחרון!"',
+  tn_p2: 'קח שתיים, חבר 😈|תדפוק את החבר!|סליחה… לא באמת 😏|זה בשבילך ❤️', tn_stop: 'עצור! 🛑|חכה בתור 😎|לא הפעם', tn_take: 'אוף 😩|זה עוד יחזור אליך…|בסדר, בסדר', tn_win: 'גמרתי! 🏆|ככה עושים את זה 😎', tn_king: 'המלך הגיע 👑|ביטלתי לך 😇',
+  offline: 'מנותק', autoPlays: 'המחשב משחק במקומו', talking: 'מדבר', lacks: 'לקח על', lcFlag: 'קלף אחרון', pend: 'על תנאי',
+  youWon: 'ניצחת!', youLost: '{n} ניצח הפעם', winnerIs: 'המנצח: {n}', winLine: '<b>{n}</b> נשאר בלי קלפים', stalled: 'המשחק נתקע — ניצח מי שהיו לו הכי מעט נקודות ביד', handPts: 'ביד {n} נק׳', rowPts: 'ביד {s} · {a} · סה״כ {t}',
+  scoreTable: 'טבלת ניקוד', nextRound: 'סיבוב הבא', summary: 'סיכום', waitHost: 'ממתינים למארח…', playAgain: 'משחק חוזר', replay: 'ריפליי', noReplay: 'אין ריפליי למשחק הזה', hintsUsed: 'השתמשת ב-{n} רמזים', winsN: 'ניצחונות', ready: 'מוכן', readyN: 'מוכנים {n}/{m}', waitingFor: 'ממתינים ל: {n}', startAnyway: 'להתחיל בלי לחכות', newGameN: 'משחק חדש עם {n} משתתפים', hostNewGame: 'המארח התחיל משחק חדש — חזור לחדר מהמסך הראשי',
+  tableKey: 'כל שורה = סיבוב · ★ = נשאר בלי קלפים · המספר = הנקודות שנכנסו', winsTable: 'ניצחונות בחדר הזה',
+  menu: 'תפריט', soundOff: 'כבה צלילים', soundOn: 'הפעל צלילים', bigBoard: 'שולחן ענק (טלפון שוכב)', rotateHint: 'סובב את הטלפון לרוחב', quitGame: 'סיים משחק', quitQ: 'לסיים את המשחק? אי אפשר יהיה להמשיך אותו.',
+  passTo: 'העבר את הטלפון ל{n}', passHint: 'שאר השחקנים לא מסתכלים 🙈', passGo: 'אני {n} — הראה לי את הקלפים',
+  rvDeal: 'חלוקה',
+  lvl0: 'קל', lvl1: 'בינוני', lvl2: 'קשה', lvlD0: 'שם קלף אקראי ולפעמים שוכח "קלף אחרון!". טוב ללמוד.', lvlD1: 'נשאר בצבע שיש לו, שומר קלפי צבע לסוף ותוקף כשאתה כמעט גומר.', lvlD2: 'זוכר על אילו צבעים לקחת מהקופה, שומר \u2066+2\u2069 ומלך כמגן, ולא שוכח אף פעם להכריז.',
+  lvlNote: 'רמה רביעית ("מומחה") נבדקה ב-150 משחקים ולא ניצחה את "קשה" — ולכן היא לא כאן. במשחק הזה יש הרבה מזל.',
+  yourName: 'השם שלך', opponents: 'כמה יריבים', level: 'רמה', howMany: 'כמה שחקנים', rulesTitle: 'חוקי המשחק', startGame: 'התחל משחק', myAvatar: 'הדמות שלי', meetThem: 'היריבים שלך',
+  preset: 'סגנון חוקים', pr_classic: 'קלאסי', pr_home: 'הבית שלנו', pr_brutal: 'אכזרי', pr_custom: 'מותאם',
+  prD_classic: 'החוקים הנפוצים: \u2066+2\u2069 מצטבר, מלך עוצר \u2066+2\u2069, מותר לסיים בכל קלף.', prD_home: 'כמו קלאסי, ומי שסיים ב-\u2066+2\u2069 מנצח רק אם זה לא חוזר אליו.', prD_brutal: 'בלי רחמים: מלך לא מציל מ-\u2066+2\u2069, אסור לסיים בקלף פעולה, לוקחים עד שיש מהלך וצוברים נקודות.', prD_custom: 'שינית חוק — אלה החוקים שלך.',
+  r_stack2: '\u2066+2\u2069 מצטבר', r_stack2D: 'אפשר לענות ב-\u2066+2\u2069, ומי שאין לו — לוקח את כל הסכום', r_king: 'מלך עוצר \u2066+2\u2069', r_kingD: 'מלך על \u2066+2\u2069 מבטל את כל הסכום', r_lc: 'חובה ללחוץ "קלף אחרון!"', r_lcD: 'מי ששוכח כשנשאר לו קלף אחד — לוקח 2',
+  r_fin: 'מותר לסיים בקלף פעולה', r_finD: 'כבוי: מי שגמר בקלף פעולה לוקח קלף והמשחק ממשיך', r_cond: 'סיום ב-\u2066+2\u2069 — ניצחון על תנאי', r_condD: 'אם ה-\u2066+2\u2069 חוזר אליך — אתה לוקח את כל הסכום וממשיכים',
+  r_draw: 'מי שאין לו מה לשים', dr_one: 'לוקח קלף אחד', dr_until: 'לוקח עד שיש מהלך', r_score: 'ניקוד', sc_single: 'כל משחק לבד', sc_points: 'צוברים נקודות', r_target: 'מי שמגיע ל… מפסיד',
+  rs_stack: '\u2066+2\u2069 מצטבר', rs_king: 'מלך עוצר \u2066+2\u2069', rs_lc: '"קלף אחרון!"', rs_fin: 'אסור לסיים בפעולה', rs_cond: '\u2066+2\u2069 על תנאי', rs_until: 'לוקחים עד מהלך', rs_pts: 'נקודות עד {n}',
+  language: 'שפה', look: 'מראה', theme: 'ערכת צבע', th_gold: 'זהב', th_silver: 'כסף', th_emerald: 'אזמרגד', th_ruby: 'רובי', th_ocean: 'ים', dayNight: 'יום / לילה', day: 'יום', night: 'לילה',
+  tableColor: 'צבע השולחן', b_grape: 'סגול', b_felt: 'לבד ירוק', b_wood: 'עץ', b_contrast: 'ניגודיות גבוהה', b_theme: 'כמו הערכה',
+  gameplay: 'משחק', speed: 'מהירות המחשב', sp_slow: 'איטי', sp_normal: 'רגיל', sp_fast: 'מהיר', oneTap: 'הקשה אחת משחקת', oneTapD: 'כבוי: הקשה בוחרת, והקשה שנייה (או על הערימה) משחקת', dimIllegal: 'להחשיך קלפים שלא מתאימים', showLacks: 'להראות על אילו צבעים יריב לקח מהקופה', showLacksD: 'המחשב ברמה "קשה" זוכר את זה — אז גם אתה רואה', sound: 'צלילים', vibrate: 'רטט בתור שלי', taunts: 'הדמויות של המחשב מדברות',
+  backup: 'גיבוי', backupD: 'הכל שמור רק בטלפון. קובץ גיבוי שומר הגדרות, סטטיסטיקה, ריפליי ומשחק פתוח.', exportB: 'ייצוא', importB: 'שחזור', exported: 'קובץ הגיבוי נשמר', badFile: 'זה לא קובץ גיבוי של TrickyNest', importQ: 'לשחזר את הגיבוי של {n} מ-{d}? הוא יחליף את מה שיש עכשיו.', backupBy: 'גיבוי TrickyNest של {n}',
+  guide: 'מדריך', resetAll: 'מחק הכל', resetQ1: 'למחוק את כל ההגדרות, הסטטיסטיקה והריפליי?', resetQ2: 'בטוח? אי אפשר לשחזר בלי קובץ גיבוי.', resetYes: 'כן, למחוק',
+  s_games: 'משחקים', s_wins: 'ניצחונות', s_winPct: 'אחוז ניצחון', s_attacks: '\u2066+2\u2069 ששלחתי', s_took: 'קלפים שלקחתי מ-\u2066+2\u2069', s_forgot: 'שכחתי "קלף אחרון"', s_runs: 'רצפים', s_bestRun: 'הרצף הכי ארוך', games: 'משחקים', wins: 'ניצחונות',
+  noReplays: 'עוד אין ריפליי. אחרי כל משחק אפשר לראות אותו שוב, עם כל הקלפים גלויים.', playNow: 'למשחק מול המחשב',
+  a_ver: 'גרסה', a_dev: 'פיתוח', a_plat: 'פלטפורמה', a_store: 'אחסון', a_local: 'על המכשיר בלבד', a_lic: 'רישיון', a_storeLink: 'חנות AppNest', a_share: 'שתף את האפליקציה', a_feedback: 'שלח משוב', a_privacy: 'מדיניות פרטיות',
+  a_disc: 'TrickyNest הוא משחק עצמאי בהשראת משחקי קלפים משפחתיים מוכרים. השם, העיצוב והקלפים שלנו, והוא אינו קשור לשום מותג או יצרן של משחקי קלפים. לבידור בלבד — בלי הימורים ובלי כסף. באונליין הקול והמהלכים עוברים ישירות בין הטלפונים ולא נשמרים אצלנו.',
+  shareTxt: '{n} מזמין אותך לשחק TrickyNest — תדפוק את החבר!',
+  newRoom: 'חדר חדש', newRoomD: 'אתה המארח: אתה מחלק, וכל אחד מקבל רק את הקלפים שלו.', createRoom: 'צור חדר', joinRoom: 'הצטרף לחדר', join: 'הצטרף',
+  netNote: 'החיבור ישיר בין הטלפונים. שרת ציבורי של PeerJS רק מכיר ביניהם. בחלק מהרשתות הסלולריות חיבור ישיר נחסם — אז עדיף Wi-Fi.',
+  roomCode: 'קוד החדר', copyLink: 'העתק קישור', copied: 'הקישור הועתק', players: 'שחקנים', addBot: 'מחשב', connecting: 'מתחבר…', waitStart: 'ממתינים שהמארח יתחיל את המשחק',
+  backToGame: 'חזרה למשחק', leaveRoom: 'צא מהחדר', leaveQ: 'לצאת מהחדר?', inviteMsg: '{n} מזמין אותך ל-TrickyNest 🃏 תדפוק את החבר! קוד: {c}',
+  nameFirst: 'קודם כתוב את השם שלך', badCode: 'הקוד הוא 5 אותיות ומספרים', needFriend: 'צריך לפחות חבר אחד מחובר', roomNotFound: 'החדר לא נמצא עדיין — מנסה שוב…', roomFull: 'החדר מלא', netLoadFail: 'אין חיבור לאינטרנט, או שהשרת הציבורי לא זמין',
+  hostLeft: 'המארח סגר את החדר', versionWarn: 'לחבר יש גרסה אחרת של האפליקציה — כדאי ששניכם תעדכנו', micDenied: 'צריך לאשר גישה למיקרופון כדי לדבר', tapToHear: 'הקש על המסך כדי לשמוע', voiceTip: 'עם 5–6 משתתפים עדיף "החזק ודבר" מאשר מיקרופון פתוח',
+  vmSent: 'ההודעה הקולית נשלחה', vmGot: 'הגיעה הודעה קולית', stop: 'עצור', openMicOn: 'מיקרופון פתוח — כולם שומעים אותך', openMicOff: 'המיקרופון הפתוח כבוי', ptt: 'החזק ודבר',
+  st_off: 'לא מחובר', st_connecting: 'מתחבר…', st_waiting: 'ממתין לחברים', st_open: 'מחובר', st_reconnecting: 'מתחבר מחדש…', st_notfound: 'מחפש חדר…', st_error: 'שגיאת רשת', st_full: 'החדר מלא',
+  ph1: 'יאללה, תשים!', ph2: 'איזה מזל!', ph3: '\u2066+2\u2069 בדרך… 😈', ph4: 'יפה!', ph5: 'עוד משחק?', ph6: 'רגע, חושב',
+  pn_0: 'ליאת', pn_1: 'רוני הבוס', pn_2: 'סבתא שושנה', pn_3: 'איתי', pn_4: 'ג׳ולי', pn_5: 'הקולונל', pn_6: 'מאיה', pn_7: 'טוני', pn_8: 'קובי', pn_9: 'רוזי', pn_10: 'המאסטר', pn_11: 'שירז',
+  ps_0: 'מנומסת מבחוץ, \u2066+2\u2069 מבפנים', ps_1: 'לא מדבר הרבה. לא צריך.', ps_2: 'מחלקת עוגיות ו-\u2066+2\u2069 באותו חיוך', ps_3: 'צעיר, מהיר ובטוח בעצמו', ps_4: 'אוהבת לסגור רצפים ארוכים', ps_5: 'שומר את המלך לרגע הנכון', ps_6: 'שקטה ומחושבת', ps_7: 'מבטיח שהוא "סתם משחק"', ps_8: 'צוחק גם כשהוא לוקח 6', ps_9: 'עושה את החשבון שלך לפני שאתה', ps_10: 'ראה הכל. פעמיים.', ps_11: 'משנה צבע בדיוק כשאתה מתכונן',
+  g1t: 'ברוך הבא ל-TrickyNest', g1d: 'המטרה: להיפטר מכל הקלפים ראשון. שמים קלף באותו צבע או באותו מספר / סימן כמו הקלף שעל הערימה. אין מה לשים? לוקחים מהקופה.',
+  g2t: 'קלפי פעולה', g2d: 'עצור — הבא בתור מפסיד תור. שנה כיוון — התור מסתובב. פלוס — שמים עוד קלף. \u2066+2\u2069 — הבא לוקח 2, אלא אם יש לו \u2066+2\u2069 משלו.',
+  g3t: 'רצף ורצף על', g3d: 'רצף פותח את הצבע שלו: שמים כמה קלפים מאותו צבע שרוצים, ואז "סגור רצף". רק הקלף האחרון פועל. רצף על אפשר לשים על הכל, ובוחרים צבע.',
+  g4t: 'מלך ושנה צבע', g4d: 'שנה צבע — שמים על הכל ובוחרים צבע. מלך — שמים על הכל, אחריו שמים איזה קלף שרוצים, ובחוקים הרגילים הוא גם עוצר שרשרת של \u2066+2\u2069.',
+  g5t: 'קלף אחרון! ואונליין', g5d: 'נשאר לך קלף אחד? לחץ "קלף אחרון!" לפני שאתה שם — מי ששוכח לוקח 2. באונליין: חדר עם קוד, דיבור, הודעות קוליות ואימוג׳י. 💡 נותן רמז.',
+  rulesHTML: '<h3>המטרה</h3><p>להיפטר מכל הקלפים ראשון. כל שחקן מקבל 8 קלפים. בחפיסה: מספרים 1–9 בארבעה צבעים — אדום ●, צהוב ▲, ירוק ■ וכחול ◆ — ועוד קלפי פעולה. מ-5 שחקנים משחקים עם שתי חפיסות.</p>{cards}<h3>תור</h3><p>שמים קלף באותו צבע כמו הקלף שעל הערימה, או אותו מספר / אותו סימן. אין מה לשים, או לא רוצה? לוקחים מהקופה ({draw}).</p><h3>קלפי פעולה</h3><ul><li><b>עצור</b> — הבא בתור מפסיד תור. בשני שחקנים — אתה משחק שוב.</li><li><b>שנה כיוון</b> — התור מסתובב לצד השני.</li><li><b>פלוס</b> — שמים מיד עוד קלף. אין? לוקחים קלף אחד.</li><li><b>\u2066+2\u2069</b> — הבא לוקח 2 קלפים. {stack}</li><li><b>רצף</b> (רק על הצבע שלו) — פותח רצף: שמים כמה קלפים מאותו צבע שרוצים ולוחצים "סגור רצף". רק הקלף האחרון פועל — רצף שנגמר ב-\u2066+2\u2069 שולח \u2066+2\u2069.</li><li><b>רצף על</b> — שמים על כל קלף, בוחרים צבע, ופותחים רצף בצבע הזה.</li><li><b>שנה צבע</b> — שמים על כל קלף ובוחרים צבע.</li><li><b>מלך</b> — שמים על כל קלף, ואחריו שמים איזה קלף שרוצים. {king}</li></ul><h3>קלף אחרון!</h3><p>{lc}</p><h3>סוף המשחק</h3><p>מי שנשאר בלי קלפים מנצח. {fin} {cond}</p><h3>ניקוד</h3><p>{score}</p><h3>הקופה</h3><p>כשהקופה נגמרת, הערימה (חוץ מהקלף העליון) מתערבבת לקופה חדשה.</p>',
+  rh_drawOne: 'קלף אחד, והתור עובר', rh_drawUntil: 'עד שמגיע קלף שמתאים, ואז חייבים לשים אותו', rh_stackOn: 'מי שיש לו \u2066+2\u2069 יכול להחזיר, והסכום מצטבר: מי שאין לו לוקח את כל הסכום.', rh_stackOff: '\u2066+2\u2069 לא מצטבר — הבא תמיד לוקח 2.',
+  rh_kingOn: 'גם על שרשרת של \u2066+2\u2069 — והוא מבטל את כל הסכום.', rh_kingOff: 'בחוקים האלה מלך לא עוצר \u2066+2\u2069.', rh_lcOn: 'כשנשאר לך קלף אחד אחרי התור — חובה ללחוץ "קלף אחרון!" לפני שאתה שם. מי ששוכח לוקח 2 קלפים.', rh_lcOff: 'בחוקים האלה לא צריך להכריז.',
+  rh_finOn: 'מותר לסיים בכל קלף, גם בקלף פעולה. פלוס אחרון — לוקחים קלף, כי חייבים להמשיך אחריו.', rh_finOff: 'אסור לסיים בקלף פעולה: מי שגמר בקלף פעולה לוקח קלף מהקופה והמשחק ממשיך. שמור מספר לסוף!',
+  rh_condOn: 'סיימת ב-\u2066+2\u2069? זה ניצחון על תנאי: אם מישהו מחזיר \u2066+2\u2069 והשרשרת חוזרת אליך — אתה לוקח את כל הסכום וממשיכים לשחק. אם מישהו לוקח (או עוצר במלך) — ניצחת.', rh_condOff: '',
+  rh_single: 'כל משחק עומד בפני עצמו: מי שגמר ראשון מנצח. בחדר נספרים הניצחונות.', rh_points: 'בסוף כל סיבוב כל אחד מקבל את הנקודות של הקלפים שנשארו לו: מספר = הערך שלו, קלף פעולה = 15, שנה צבע / מלך / רצף על = 20. מי שמגיע ל-{t} מפסיד, והמנצח הוא מי שצבר הכי מעט.'
+},
+en: {
+  subtitle: 'Get your friends!', tagline: 'The card game with +2, Stop, Run and the King', mCpu: 'Vs computer', mCpuD: '1–5 opponents with character, three levels', mHot: 'One phone', mHotD: '2–6 players, a pass screen between turns', mNet: 'Online with friends', mNetD: 'Room code, WhatsApp invite, talk while you play',
+  rules: 'Rules', stats: 'Stats', replays: 'Replays', settings: 'Settings', about: 'About', resume: 'Continue game', resumeNet: 'Back to the online room',
+  saveFail: 'Saving failed — the phone storage is full', cancel: 'Cancel', ok: 'OK', close: 'Close', home: 'Home', next: 'Next', skip: 'Skip', letsPlay: "Let's play",
+  player: 'Player', you: 'You', host: 'host', points: 'Points', pts: '{n} pts', none: 'None', game1: 'Game', roundN: 'Round {n}', toPts: 'to {n} pts', oneGame: 'One game',
+  col0: 'red', col1: 'yellow', col2: 'green', col3: 'blue', colorNow: 'Colour: {c}', pickColor: 'Which colour?', pickColorRun: 'Super run — which colour?', deckN: 'Deck · {n}',
+  t_stop: 'Stop', t_rev: 'Reverse', t_p2: '+2', t_plus: 'Plus', t_seq: 'Run', t_chg: 'Change colour', t_king: 'King', t_sseq: 'Super run', cardOf: '{c} {t}',
+  yourTurn: 'Your turn — play a matching card or draw', yourTurnD2: '+{n} on you! Answer with +2{k} or take {n}', orKing: ' or a King', kingFree: 'King! Play any card you like', plusMore: 'Plus — play one more card, or draw one', mustPlay: 'You drew a card that fits — play a card',
+  seqMine: 'Run {c}: play more {c} cards, or close', seqOther: '{n} is running {c}…', turnOf: "{n}'s turn", thinking: '{n} is thinking…', passing: 'Passing the phone…', sending: 'Sending…', gameOver: 'Game over', roundOver: 'Round over', spectator: 'You are watching', spectatorNext: 'You are watching — you join the next game',
+  draw: 'Draw', drawN: 'Take {n}', closeRun: 'Close run', lastCard: 'Last card!', lastCardOn: '☝️ Called', cardsN: '{n} cards', oneCard: 'One card',
+  ev_play: '{who} played {card}', ev_playC: '{who} played {card} and chose {c}', ev_draw: '{who} drew a card', ev_drawN: '{who} drew {n} cards', ev_take: '{who} took {n} 😩', ev_close: '{who} closed a run of {n}', ev_lc: '{who}: last card! ☝️',
+  ev_lcpen: '{who} forgot "last card!" and took {n} 🙈', ev_back: 'The +2 came back to {who} — takes {n}!', ev_pend: '{who} went out on a +2 — if it comes back, he takes it all', ev_fdraw: '{who} went out on an action card and drew one', ev_pdraw: '{who} went out on a Plus and drew one', ev_shuf: 'The deck ran out — reshuffled',
+  notLegal: "That card doesn't fit now", notLegalD2: 'Answer with +2{k} or take the cards', notLegalSeq: 'In a run you may only play {c}', mustPlayErr: 'You drew a card that fits — you must play', seqDrawErr: 'Close the run first', illegal: 'That move is not allowed', lcDone: 'Called — now play the card', lcOff: '"Last card!" is off in this game\'s rules',
+  hintPlay: '💡 Play {card}', hintPlayC: '💡 Play {card} and choose {c}', hintDraw: '💡 Better draw from the deck', hintClose: '💡 Close the run', hintLc: '💡 One card left after this move — tap "Last card!"',
+  tn_p2: 'Take two, buddy 😈|Gotcha!|Sorry… not really 😏|This one is for you ❤️', tn_stop: 'Stop! 🛑|Wait your turn 😎|Not this time', tn_take: 'Ugh 😩|This will come back to you…|Fine, fine', tn_win: "I'm out! 🏆|That's how it's done 😎", tn_king: 'The King is here 👑|Cancelled 😇',
+  offline: 'offline', autoPlays: 'computer plays for him', talking: 'talking', lacks: 'drew on', lcFlag: 'last card', pend: 'on condition',
+  youWon: 'You won!', youLost: '{n} won this time', winnerIs: 'Winner: {n}', winLine: '<b>{n}</b> has no cards left', stalled: 'The game got stuck — the fewest points in hand won', handPts: '{n} pts in hand', rowPts: 'hand {s} · {a} · total {t}',
+  scoreTable: 'Score table', nextRound: 'Next round', summary: 'Summary', waitHost: 'Waiting for the host…', playAgain: 'Play again', replay: 'Replay', noReplay: 'No replay for this game', hintsUsed: 'You used {n} hints', winsN: 'Wins', ready: 'Ready', readyN: 'Ready {n}/{m}', waitingFor: 'waiting for: {n}', startAnyway: 'Start without waiting', newGameN: 'New game with {n} players', hostNewGame: 'The host started a new game — go back to the room from the home screen',
+  tableKey: 'Each row = a round · ★ = went out · the number = points added', winsTable: 'Wins in this room',
+  menu: 'Menu', soundOff: 'Sound off', soundOn: 'Sound on', bigBoard: 'Big table (landscape)', rotateHint: 'Turn your phone sideways', quitGame: 'End game', quitQ: 'End this game? It cannot be continued.',
+  passTo: 'Pass the phone to {n}', passHint: 'Everyone else, look away 🙈', passGo: "I'm {n} — show my cards",
+  rvDeal: 'Deal',
+  lvl0: 'Easy', lvl1: 'Medium', lvl2: 'Hard', lvlD0: 'Plays a random card and sometimes forgets "last card!". Good for learning.', lvlD1: 'Stays in a colour it holds, keeps wilds for the end and attacks when you are about to finish.', lvlD2: 'Remembers which colours you drew on, keeps +2 and the King as a shield, and never forgets to call.',
+  lvlNote: 'A fourth level ("expert") was tested over 150 games and did not beat "hard" — so it is not here. This game has a lot of luck.',
+  yourName: 'Your name', opponents: 'Opponents', level: 'Level', howMany: 'Players', rulesTitle: 'Rules', startGame: 'Start game', myAvatar: 'My character', meetThem: 'Your opponents',
+  preset: 'Rule style', pr_classic: 'Classic', pr_home: 'Our house', pr_brutal: 'Brutal', pr_custom: 'Custom',
+  prD_classic: 'The common rules: +2 stacks, the King stops +2, you may finish on any card.', prD_home: 'Like classic, and finishing on +2 wins only if it does not come back to you.', prD_brutal: 'No mercy: the King does not save you from +2, no finishing on action cards, draw until you can play, and points add up.', prD_custom: 'You changed a rule — these are your rules.',
+  r_stack2: '+2 stacks', r_stack2D: 'Answer with your own +2; whoever has none takes the whole sum', r_king: 'King stops +2', r_kingD: 'A King on +2 cancels the whole sum', r_lc: 'Must tap "Last card!"', r_lcD: 'Forget it with one card left — take 2',
+  r_fin: 'May finish on an action card', r_finD: 'Off: finishing on an action card means drawing one and playing on', r_cond: 'Finishing on +2 — a win on condition', r_condD: 'If the +2 comes back to you, you take the whole sum and play on',
+  r_draw: 'When you cannot play', dr_one: 'Draw one card', dr_until: 'Draw until you can play', r_score: 'Scoring', sc_single: 'Each game alone', sc_points: 'Points add up', r_target: 'Lose when reaching…',
+  rs_stack: '+2 stacks', rs_king: 'King stops +2', rs_lc: '"Last card!"', rs_fin: 'no action finish', rs_cond: '+2 on condition', rs_until: 'draw until', rs_pts: 'points to {n}',
+  language: 'Language', look: 'Look', theme: 'Theme', th_gold: 'Gold', th_silver: 'Silver', th_emerald: 'Emerald', th_ruby: 'Ruby', th_ocean: 'Ocean', dayNight: 'Day / night', day: 'Day', night: 'Night',
+  tableColor: 'Table colour', b_grape: 'Purple', b_felt: 'Green felt', b_wood: 'Wood', b_contrast: 'High contrast', b_theme: 'Match theme',
+  gameplay: 'Play', speed: 'Computer speed', sp_slow: 'Slow', sp_normal: 'Normal', sp_fast: 'Fast', oneTap: 'One tap plays', oneTapD: 'Off: a tap selects, a second tap (or a tap on the pile) plays', dimIllegal: "Dim cards that don't fit", showLacks: 'Show which colours an opponent drew on', showLacksD: 'The "hard" computer remembers it — so you see it too', sound: 'Sounds', vibrate: 'Vibrate on my turn', taunts: 'Computer characters talk',
+  backup: 'Backup', backupD: 'Everything stays on this phone. A backup file keeps settings, stats, replays and an open game.', exportB: 'Export', importB: 'Restore', exported: 'Backup file saved', badFile: 'This is not a TrickyNest backup file', importQ: "Restore {n}'s backup from {d}? It replaces what is here now.", backupBy: "{n}'s TrickyNest backup",
+  guide: 'Guide', resetAll: 'Delete everything', resetQ1: 'Delete all settings, stats and replays?', resetQ2: 'Sure? This cannot be undone without a backup file.', resetYes: 'Yes, delete',
+  s_games: 'Games', s_wins: 'Wins', s_winPct: 'Win rate', s_attacks: '+2 I sent', s_took: 'Cards taken from +2', s_forgot: 'Forgot "last card"', s_runs: 'Runs', s_bestRun: 'Longest run', games: 'Games', wins: 'Wins',
+  noReplays: 'No replays yet. After each game you can watch it again with every card face up.', playNow: 'Play vs computer',
+  a_ver: 'Version', a_dev: 'Developer', a_plat: 'Platform', a_store: 'Storage', a_local: 'On this device only', a_lic: 'License', a_storeLink: 'AppNest store', a_share: 'Share the app', a_feedback: 'Send feedback', a_privacy: 'Privacy policy',
+  a_disc: 'TrickyNest is an independent game inspired by well-known family card games. The name, design and cards are our own, and it is not affiliated with any card-game brand or maker. For fun only — no gambling, no money. Online, voice and moves travel directly between phones and are not stored by us.',
+  shareTxt: '{n} invites you to play TrickyNest',
+  newRoom: 'New room', newRoomD: 'You are the host: you deal, and everyone receives only their own cards.', createRoom: 'Create room', joinRoom: 'Join a room', join: 'Join',
+  netNote: 'Phones connect directly. A public PeerJS server only introduces them. Some mobile networks block direct connections — Wi-Fi works best.',
+  roomCode: 'Room code', copyLink: 'Copy link', copied: 'Link copied', players: 'Players', addBot: 'Computer', connecting: 'Connecting…', waitStart: 'Waiting for the host to start',
+  backToGame: 'Back to the game', leaveRoom: 'Leave room', leaveQ: 'Leave the room?', inviteMsg: '{n} invites you to TrickyNest 🃏 code: {c}',
+  nameFirst: 'Type your name first', badCode: 'The code is 5 letters and digits', needFriend: 'At least one friend must be connected', roomNotFound: 'Room not found yet — retrying…', roomFull: 'The room is full', netLoadFail: 'No internet, or the public server is unavailable',
+  hostLeft: 'The host closed the room', versionWarn: 'Your friend has a different app version — you should both update', micDenied: 'Allow microphone access to talk', tapToHear: 'Tap the screen to hear', voiceTip: 'With 5–6 people, hold-to-talk works better than an open mic',
+  vmSent: 'Voice message sent', vmGot: 'Voice message received', stop: 'Stop', openMicOn: 'Open mic — everyone hears you', openMicOff: 'Open mic is off', ptt: 'Hold to talk',
+  st_off: 'Not connected', st_connecting: 'Connecting…', st_waiting: 'Waiting for friends', st_open: 'Connected', st_reconnecting: 'Reconnecting…', st_notfound: 'Looking for room…', st_error: 'Network error', st_full: 'Room full',
+  ph1: 'Come on, play!', ph2: 'So lucky!', ph3: '+2 incoming… 😈', ph4: 'Nice!', ph5: 'Another game?', ph6: 'Wait, thinking',
+  pn_0: 'Liat', pn_1: 'Roni the Boss', pn_2: 'Grandma Shoshana', pn_3: 'Itai', pn_4: 'Julie', pn_5: 'The Colonel', pn_6: 'Maya', pn_7: 'Tony', pn_8: 'Kobi', pn_9: 'Rosie', pn_10: 'The Master', pn_11: 'Shiraz',
+  ps_0: 'Polite outside, +2 inside', ps_1: "Doesn't talk much. Doesn't need to.", ps_2: 'Hands out cookies and +2 with the same smile', ps_3: 'Young, fast and sure of himself', ps_4: 'Loves closing long runs', ps_5: 'Keeps the King for the right moment', ps_6: 'Quiet and calculated', ps_7: 'Swears it is "just a game"', ps_8: 'Laughs even when he takes 6', ps_9: 'Does your maths before you do', ps_10: 'Has seen it all. Twice.', ps_11: 'Changes colour just as you get ready',
+  g1t: 'Welcome to TrickyNest', g1d: 'Goal: be the first to get rid of all your cards. Play a card of the same colour, or the same number / symbol, as the card on the pile. Nothing to play? Draw from the deck.',
+  g2t: 'Action cards', g2d: 'Stop — the next player loses a turn. Reverse — play turns around. Plus — play one more card. +2 — the next player takes 2, unless he answers with his own +2.',
+  g3t: 'Run and super run', g3d: 'A Run opens its colour: play as many cards of that colour as you like, then "Close run". Only the last card acts. A Super run goes on anything, and you pick the colour.',
+  g4t: 'King and change colour', g4d: 'Change colour — goes on anything; you pick the colour. King — goes on anything, then you play any card you like; in the usual rules it also stops a +2 chain.',
+  g5t: 'Last card! and online', g5d: 'One card left? Tap "Last card!" before you play — forget it and take 2. Online: a room code, voice, voice messages and emoji. 💡 gives a hint.',
+  rulesHTML: '<h3>Goal</h3><p>Be the first with no cards. Everyone gets 8 cards. The deck: numbers 1–9 in four colours — red ●, yellow ▲, green ■ and blue ◆ — plus action cards. With 5 or more players, two decks are used.</p>{cards}<h3>A turn</h3><p>Play a card of the same colour as the top of the pile, or the same number / symbol. Nothing to play, or you prefer not to? Draw from the deck ({draw}).</p><h3>Action cards</h3><ul><li><b>Stop</b> — the next player loses a turn. With two players you play again.</li><li><b>Reverse</b> — play turns the other way.</li><li><b>Plus</b> — play another card at once. None? Draw one.</li><li><b>+2</b> — the next player takes 2 cards. {stack}</li><li><b>Run</b> (only on its own colour) — opens a run: play as many cards of that colour as you like, then tap "Close run". Only the last card acts — a run ending on +2 sends a +2.</li><li><b>Super run</b> — goes on any card; pick a colour and run it.</li><li><b>Change colour</b> — goes on any card; pick a colour.</li><li><b>King</b> — goes on any card, then play any card you like. {king}</li></ul><h3>Last card!</h3><p>{lc}</p><h3>The end</h3><p>The first player with no cards wins. {fin} {cond}</p><h3>Scoring</h3><p>{score}</p><h3>The deck</h3><p>When the deck runs out, the pile (except its top card) is shuffled into a new deck.</p>',
+  rh_drawOne: 'one card, then the turn passes', rh_drawUntil: 'until a card fits — and then you must play', rh_stackOn: 'Whoever has a +2 may answer and the sum grows: whoever has none takes the whole sum.', rh_stackOff: '+2 does not stack — the next player always takes 2.',
+  rh_kingOn: 'Also on a +2 chain — and it cancels the whole sum.', rh_kingOff: 'In these rules the King does not stop +2.', rh_lcOn: 'When one card will be left after your turn, tap "Last card!" before you play. Forget it and you take 2 cards.', rh_lcOff: 'In these rules there is nothing to call.',
+  rh_finOn: 'You may finish on any card, even an action card. A Plus as your last card means drawing one, because a Plus must be followed.', rh_finOff: 'No finishing on an action card: whoever goes out on one draws a card and play goes on. Keep a number for the end!',
+  rh_condOn: 'Went out on a +2? It is a win on condition: if someone answers with +2 and the chain comes back to you, you take the whole sum and play on. If someone takes (or a King stops it) — you win.', rh_condOff: '',
+  rh_single: 'Each game stands alone: the first one out wins. Wins are counted in the room.', rh_points: 'At the end of each round everyone scores the cards left in hand: a number = its value, an action card = 15, change colour / King / super run = 20. Reaching {t} loses, and the winner is whoever has the fewest points.'
+},
+ru: { subtitle: 'Подставь друга!', tagline: 'Карточная игра с +2, «стоп», серией и королём', mCpu: 'Против компьютера', mCpuD: '1–5 соперников, 3 уровня', mHot: 'Один телефон', mHotD: '2–6 игроков передают телефон', mNet: 'Онлайн с друзьями', mNetD: 'Комната с кодом и голосом', rules: 'Правила', stats: 'Статистика', replays: 'Повторы', settings: 'Настройки', about: 'О программе', resume: 'Продолжить', cancel: 'Отмена', close: 'Закрыть', home: 'Домой', startGame: 'Начать игру', yourName: 'Ваше имя', language: 'Язык', theme: 'Тема', level: 'Уровень', opponents: 'Соперники', lvl0: 'Лёгкий', lvl1: 'Средний', lvl2: 'Сложный', playAgain: 'Ещё раз', createRoom: 'Создать комнату', join: 'Войти', yourTurn: 'Ваш ход', draw: 'Взять', closeRun: 'Закрыть серию', lastCard: 'Последняя!', scoreTable: 'Таблица очков', menu: 'Меню', quitGame: 'Завершить игру', ptt: 'Держите, чтобы говорить', col0: 'красный', col1: 'жёлтый', col2: 'зелёный', col3: 'синий', pickColor: 'Какой цвет?', youWon: 'Вы победили!' },
+es: { subtitle: '¡Fastidia a tu amigo!', tagline: 'El juego de cartas con +2, Alto, Escalera y Rey', mCpu: 'Contra la computadora', mCpuD: '1–5 rivales, 3 niveles', mHot: 'Un teléfono', mHotD: '2–6 jugadores se pasan el teléfono', mNet: 'En línea con amigos', mNetD: 'Sala con código y voz', rules: 'Reglas', stats: 'Estadísticas', replays: 'Repeticiones', settings: 'Ajustes', about: 'Acerca de', resume: 'Continuar', cancel: 'Cancelar', close: 'Cerrar', home: 'Inicio', startGame: 'Empezar', yourName: 'Tu nombre', language: 'Idioma', theme: 'Tema', level: 'Nivel', opponents: 'Rivales', lvl0: 'Fácil', lvl1: 'Medio', lvl2: 'Difícil', playAgain: 'Otra vez', createRoom: 'Crear sala', join: 'Unirse', yourTurn: 'Tu turno', draw: 'Robar', closeRun: 'Cerrar escalera', lastCard: '¡Última!', scoreTable: 'Puntuación', menu: 'Menú', quitGame: 'Terminar partida', ptt: 'Mantén para hablar', col0: 'rojo', col1: 'amarillo', col2: 'verde', col3: 'azul', pickColor: '¿Qué color?', youWon: '¡Ganaste!' },
+ar: { subtitle: '!أوقِع صاحبك', tagline: 'لعبة الورق مع +2 وقف وسلسلة وملك', mCpu: 'ضد الكمبيوتر', mCpuD: '1–5 خصوم، 3 مستويات', mHot: 'هاتف واحد', mHotD: '2–6 لاعبين يتبادلون الهاتف', mNet: 'أونلاين مع الأصدقاء', mNetD: 'غرفة برمز وصوت', rules: 'القواعد', stats: 'إحصائيات', replays: 'الإعادة', settings: 'الإعدادات', about: 'حول', resume: 'متابعة', cancel: 'إلغاء', close: 'إغلاق', home: 'الرئيسية', startGame: 'ابدأ اللعب', yourName: 'اسمك', language: 'اللغة', theme: 'السمة', level: 'المستوى', opponents: 'الخصوم', lvl0: 'سهل', lvl1: 'متوسط', lvl2: 'صعب', playAgain: 'مرة أخرى', createRoom: 'إنشاء غرفة', join: 'انضمام', yourTurn: 'دورك', draw: 'اسحب', closeRun: 'أغلق السلسلة', lastCard: '!الورقة الأخيرة', scoreTable: 'جدول النقاط', menu: 'القائمة', quitGame: 'إنهاء اللعبة', ptt: 'اضغط للتحدث', col0: 'أحمر', col1: 'أصفر', col2: 'أخضر', col3: 'أزرق', pickColor: 'أي لون؟', youWon: '!فزت' }
+};
+
+/* ---- app_core.js ---- */
+/* =====================================================================
+   TrickyNest — app core (storage · settings · screens · cards · sound)
+   ===================================================================== */
+const APP_VERSION = '1.0.0';
+const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const P = 'tricky_';
+const FAST = /[?&]fast=1/.test(location.search);
+
+/* ---------- storage shim: localStorage with an in-memory fallback ---------- */
+const LS = (() => {
+  const mem = {}; let ok = true;
+  try { localStorage.setItem(P + 't', '1'); localStorage.removeItem(P + 't'); } catch (e) { ok = false; }
+  return {
+    get(k, d) { try { const v = ok ? localStorage.getItem(P + k) : mem[k]; return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { const s = JSON.stringify(v); try { if (ok) localStorage.setItem(P + k, s); else mem[k] = s; return true; } catch (e) { toast(T('saveFail')); return false; } },
+    del(k) { try { if (ok) localStorage.removeItem(P + k); else delete mem[k]; } catch (e) {} },
+    keys() { const out = []; try { if (ok) for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith(P)) out.push(k.slice(P.length)); } else out.push(...Object.keys(mem)); } catch (e) {} return out; }
+  };
+})();
+
+const ST = Object.assign({
+  name: '', lang: 'he', theme: 'gold', mode: 'night', board: 'grape', sound: true, vib: true, speed: 'normal', guided: false,
+  oneTap: false, dim: true, showLacks: true, taunts: true, avatar: 0,
+  rules: Object.assign({}, TE.DEFAULTS), botN: 2, botLvl: 1, hotN: 2, hotNames: []
+}, LS.get('settings', {}));
+ST.rules = Object.assign({}, TE.DEFAULTS, ST.rules || {});
+const saveST = () => LS.set('settings', ST);
+const STATS = Object.assign({ cpu: {}, hot: {}, net: {} }, LS.get('stats', {}));
+const saveStats = () => LS.set('stats', STATS);
+let REPLAYS = LS.get('replays', []);
+
+/* ---------- i18n ---------- */
+const T = (k, o) => {
+  const L = LANG[ST.lang] || LANG.en;
+  let s = L[k] != null ? L[k] : (LANG.en[k] != null ? LANG.en[k] : k);
+  if (o) for (const x in o) s = s.split('{' + x + '}').join(o[x]);
+  return s;
+};
+const RTL = () => ST.lang === 'he' || ST.lang === 'ar';
+function applyLang() {
+  document.documentElement.lang = ST.lang; document.documentElement.dir = RTL() ? 'rtl' : 'ltr';
+  $$('[data-t]').forEach(el => el.textContent = T(el.dataset.t));
+  $$('.back').forEach(b => b.textContent = RTL() ? '→' : '←');
+  const pt = $('#vPtt'); if (pt) pt.textContent = '🎙 ' + T('ptt');
+}
+function applyLook() {
+  const d = document.documentElement;
+  d.dataset.theme = ST.theme; d.dataset.mode = ST.mode; d.dataset.board = ST.board;
+  d.classList.toggle('fast', FAST);
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = ST.mode === 'day' ? '#f4f2ec' : '#0a0a0a';
+}
+const THEMES = ['gold', 'silver', 'emerald', 'ruby', 'ocean'];
+
+/* ---------- screens + toast + overlays ---------- */
+let SCREEN = 'home';
+function show(id) {
+  $$('.scr').forEach(s => s.classList.toggle('on', s.id === id)); SCREEN = id; window.scrollTo(0, 0);
+  if (id === 'game') requestAnimationFrame(sizeCards);
+}
+let toastT = null;
+function toast(msg, ms) { const t = $('#toast'); t.innerHTML = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms || 2600); }
+function overlay(html, cls) {
+  const o = document.createElement('div'); o.className = 'ov ' + (cls || ''); o.innerHTML = '<div class="box">' + html + '</div>';
+  $('#ovs').appendChild(o); return o;
+}
+const closeOv = o => { if (o && o.parentNode) o.parentNode.removeChild(o); };
+const anyOv = () => $('#ovs').children.length > 0;
+function closeAllOv() { $('#ovs').innerHTML = ''; }
+function confirmBox(msg, yes, cb) {
+  const o = overlay('<p style="font-size:17px">' + esc(msg) + '</p><div class="row" style="margin-top:12px"><button class="btn" data-n>' + T('cancel') + '</button><button class="btn main" data-y>' + esc(yes || T('ok')) + '</button></div>');
+  o.querySelector('[data-n]').onclick = () => closeOv(o);
+  o.querySelector('[data-y]').onclick = () => { closeOv(o); cb(); };
+}
+
+/* ---------- cards: drawn in CSS + inline SVG ---------- */
+const SHAPES = ['●', '▲', '■', '◆'];
+const SV = (p, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"' + (extra || '') + '>' + p + '</svg>';
+const ICONS = {
+  [TE.STOP]: SV('<path d="M8.2 3h7.6L21 8.2v7.6L15.8 21H8.2L3 15.8V8.2z"/><path d="M8 12h8"/>'),
+  [TE.REV]: SV('<path d="M4 9h13"/><path d="M14 5l4 4-4 4"/><path d="M20 15H7"/><path d="M10 11l-4 4 4 4"/>'),
+  [TE.SEQ]: SV('<rect x="3" y="7" width="7" height="11" rx="1.5"/><rect x="8.5" y="5" width="7" height="11" rx="1.5" fill="currentColor" fill-opacity=".25"/><rect x="14" y="3" width="7" height="11" rx="1.5" fill="currentColor" fill-opacity=".5"/>'),
+  [TE.CHG]: '<svg viewBox="0 0 24 24"><path d="M12 12V2a10 10 0 0 1 10 10z" fill="var(--k0)"/><path d="M12 12h10a10 10 0 0 1-10 10z" fill="var(--k1)"/><path d="M12 12v10A10 10 0 0 1 2 12z" fill="var(--k2)"/><path d="M12 12H2A10 10 0 0 1 12 2z" fill="var(--k3)"/><circle cx="12" cy="12" r="10" fill="none" stroke="#f2e7c9" stroke-width="1.2"/></svg>',
+  [TE.KING]: '<svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 4l4.5 8L21 8l-2 11H5z" fill="#e6b84a" stroke="#fff3c4" stroke-width="1.1" stroke-linejoin="round"/><circle cx="12" cy="4" r="1.6" fill="#fff3c4"/><circle cx="3" cy="8" r="1.4" fill="#fff3c4"/><circle cx="21" cy="8" r="1.4" fill="#fff3c4"/><path d="M6 16.5h12" stroke="#8a5f00" stroke-width="1.2"/></svg>',
+  [TE.SSEQ]: '<svg viewBox="0 0 24 24" stroke-width="1.6" stroke="#f2e7c9"><rect x="2" y="8" width="7" height="11" rx="1.5" fill="var(--k0)"/><rect x="6.5" y="6.3" width="7" height="11" rx="1.5" fill="var(--k1)"/><rect x="11" y="4.6" width="7" height="11" rx="1.5" fill="var(--k2)"/><rect x="15.5" y="3" width="7" height="11" rx="1.5" fill="var(--k3)"/></svg>'
+};
+const CORNER = { 10: '⊘', 11: '⇄', 12: '+2', 13: '+', 14: '»', 15: '✦', 16: '♛', 17: '»' };
+const TNAME = { 10: 't_stop', 11: 't_rev', 12: 't_p2', 13: 't_plus', 14: 't_seq', 15: 't_chg', 16: 't_king', 17: 't_sseq' };
+// opts.nm → the action's name under the icon (big cards only)
+function cardHTML(id, cls, attrs, nm) {
+  cls = cls || ''; attrs = attrs || '';
+  if (id == null) return '<div class="tk tkb ' + cls + '" ' + attrs + '></div>';
+  const t = TE.typ(id), c = TE.col(id), cc = c < 0 ? 'cw' : 'c' + c, sh = c >= 0 ? SHAPES[c] : '';
+  const cor = t <= 9 ? String(t) : CORNER[t];
+  let mid;
+  if (t <= 9) mid = '<b>' + t + '</b>';
+  else if (t === TE.P2) mid = '<b class="sm">+2</b>';
+  else if (t === TE.PLUS) mid = '<b>+</b>';
+  else mid = ICONS[t];
+  const label = t > 9 && nm ? '<span class="nm">' + esc(T(TNAME[t])) + '</span>' : '';
+  return '<div class="tk ' + cc + ' ' + cls + '" data-c="' + id + '" ' + attrs + ' aria-label="' + esc(cardName(id)) + '"><span class="ix">' + cor + '<small>' + sh + '</small></span><span class="mid">' + mid + '</span>' + label + '<span class="ix b">' + cor + '<small>' + sh + '</small></span></div>';
+}
+const iso = s => '\u2066' + s + '\u2069';                  // left-to-right isolate: "+2" never flips to "2+"
+const colName = c => T('col' + c);
+const colChip = c => '<span style="color:var(--k' + c + ')">' + SHAPES[c] + '</span> ' + esc(colName(c));
+function cardName(id) {
+  const t = TE.typ(id), c = TE.col(id);
+  if (t <= 9) return T('cardOf', { t: iso(String(t)), c: colName(c) }).replace(/^(\S+) (\S+)$/, '$1 $2');
+  if (c < 0) return T(TNAME[t]);
+  return T('cardOf', { t: iso(T(TNAME[t])), c: colName(c) });
+}
+const cardChip = id => { const c = TE.col(id); return (c >= 0 ? '<span style="color:var(--k' + c + ')">' + SHAPES[c] + '</span>' : '✦') + ' <b>' + esc(cardName(id)) + '</b>'; };
+
+/* ---------- characters (computer personalities + avatars) ---------- */
+const AVN = 12;
+const avSrc = n => 'av-' + String(Math.max(1, Math.min(AVN, n || 1))).padStart(2, '0') + '.webp';
+function pickPersonas(k, avoidAv) { const pool = []; for (let i = 0; i < AVN; i++) if (i + 1 !== avoidAv) pool.push(i); pool.sort(() => Math.random() - .5); return pool.slice(0, k); }
+const myAv = () => ST.avatar || hashAv(ST.name);          // no character picked yet → one that comes from the name
+const hashAv = s => 1 + Array.from(String(s || '')).reduce((h, c) => (h * 31 + c.codePointAt(0)) >>> 0, 7) % AVN;
+
+/* ---------- sound (synthesised, no files) + vibration ---------- */
+let AC = null;
+function beep(kind) {
+  if (!ST.sound || FAST) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const t = AC.currentTime;
+    const tone = (f, d, type, v, at) => { const o = AC.createOscillator(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t + (at || 0)); const g = AC.createGain(); g.gain.setValueAtTime(v || .12, t + (at || 0)); g.gain.exponentialRampToValueAtTime(.0001, t + (at || 0) + d); o.connect(g); g.connect(AC.destination); o.start(t + (at || 0)); o.stop(t + (at || 0) + d + .02); };
+    const swish = (at, vol, dur, f0) => { const n = AC.createBuffer(1, Math.max(1, AC.sampleRate * dur | 0), AC.sampleRate), d = n.getChannelData(0); for (let i = 0; i < d.length; i++) { const x = i / d.length; d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * x) * (1 - x * .5); } const s = AC.createBufferSource(); s.buffer = n; const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.setValueAtTime(f0 || 1200, t + at); f.frequency.linearRampToValueAtTime((f0 || 1200) * 3, t + at + dur); f.Q.value = .9; const g = AC.createGain(); g.gain.value = vol; s.connect(f); f.connect(g); g.connect(AC.destination); s.start(t + at); };
+    const clack = (at, vol, f) => { const n = AC.createBuffer(1, AC.sampleRate * .03 | 0, AC.sampleRate), d = n.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 6); const s = AC.createBufferSource(); s.buffer = n; const b = AC.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f || 3000; b.Q.value = 2.5; const g = AC.createGain(); g.gain.value = vol; s.connect(b); b.connect(g); g.connect(AC.destination); s.start(t + at); };
+    if (kind === 'card') { swish(0, .5, .07); clack(.06, .22, 2200); }
+    else if (kind === 'draw') swish(0, .32, .09, 900);
+    else if (kind === 'p2') { swish(0, .5, .07); tone(330, .12, 'square', .05, .05); tone(220, .2, 'square', .05, .14); }
+    else if (kind === 'stop') { swish(0, .5, .07); tone(196, .18, 'triangle', .16, .04); }
+    else if (kind === 'king') { swish(0, .5, .07); [523, 659, 784].forEach((f, i) => tone(f, .18, 'triangle', .1, .05 + i * .07)); }
+    else if (kind === 'lc') { tone(880, .1, 'square', .05); tone(1175, .16, 'square', .05, .11); }
+    else if (kind === 'shuffle') { for (let i = 0; i < 18; i++) clack(i * .022 + Math.random() * .008, .12 + Math.random() * .08, 2600 + Math.random() * 1600); }
+    else if (kind === 'turn') tone(880, .12, 'sine', .07);
+    else if (kind === 'win') [392, 523, 659, 784, 1047].forEach((f, i) => tone(f, .3, 'sine', .14, i * .11));
+    else if (kind === 'lose') [392, 330, 262].forEach((f, i) => tone(f, .3, 'sine', .12, i * .14));
+    else if (kind === 'err') tone(180, .15, 'square', .06);
+  } catch (e) {}
+}
+const buzz = ms => { if (ST.vib && navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) try { navigator.vibrate(ms || 25); } catch (e) {} };
+
+/* ---------- stats helpers ---------- */
+function stat(mode) { return STATS[mode] || (STATS[mode] = {}); }
+function inc(mode, k, n) { const s = stat(mode); s[k] = (s[k] || 0) + (n == null ? 1 : n); }
+
+/* ---- table.js ---- */
+/* =====================================================================
+   TrickyNest — game screen + controllers
+   CUR.mode: 'cpu' (vs computer) · 'hot' (one phone) · 'net' (online; host owns G, guest gets views)
+   ===================================================================== */
+let CUR = null;
+const isGuest = () => CUR && CUR.mode === 'net' && !CUR.host;
+const curView = () => !CUR ? null : isGuest() ? CUR.V : TE.view(CUR.G, CUR.me);
+const myTurn = V => !!V && V.me >= 0 && V.turn === V.me && !V.end && !V.over && !(CUR.mode === 'hot' && CUR.passing) && !CUR.pending;
+function pname(V, s) { const p = V.players[s]; if (!p) return ''; if (p.kind === 'bot' && p.pe >= 0) return T('pn_' + p.pe); return p.name || T('player') + ' ' + (s + 1); }
+const pav = (V, s) => { const p = V.players[s]; return p && p.av ? p.av : (s % AVN) + 1; };
+const lvlName = l => T(['lvl0', 'lvl1', 'lvl2'][l] || 'lvl1');
+const isPoints = V => V.cfg.scoring === 'points';
+
+function newCur(mode, G, me, extra) {
+  CUR = Object.assign({ mode, G, me, host: true, sel: null, hintSel: null, hints: 0, endKey: '', turnKey: '', evKey: '', evSeen: 0, prevHand: null, botT: null, passing: false, pending: false, bubbles: {}, talk: {}, id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), started: Date.now() }, extra || {});
+  return CUR;
+}
+function startLocal(mode, players, cfg) {
+  const G = TE.newGame(players, cfg);
+  newCur(mode, G, mode === 'hot' ? -2 : 0);
+  closeAllOv(); show('game'); after();
+}
+function saveCur() {
+  if (!CUR || !CUR.G) return;
+  if (CUR.mode === 'net') { saveNet(); return; }
+  if (CUR.G.over) { LS.del('game'); return; }
+  LS.set('game', { mode: CUR.mode, G: CUR.G, me: CUR.me, hints: CUR.hints, id: CUR.id, started: CUR.started });
+}
+function resumeLocal() {
+  const s = LS.get('game', null); if (!s || !s.G) return false;
+  newCur(s.mode, s.G, s.mode === 'hot' ? -2 : s.me, { hints: s.hints || 0, id: s.id || 'g', started: s.started || Date.now() });
+  closeAllOv(); show('game'); after(); return true;
+}
+
+/* ---------- after every change ---------- */
+function after() {
+  if (!CUR) return;
+  if (CUR.G) { saveCur(); if (CUR.mode === 'net' && CUR.host) pushViews(); }
+  render();
+  scheduleBot();
+}
+function scheduleBot() {
+  if (!CUR) return; clearTimeout(CUR.botT);
+  if (!CUR.G || isGuest()) return;
+  const G = CUR.G, R = G.round; if (G.over || R.end) return;
+  const s = R.turn, p = G.players[s], auto = typeof autoSeat === 'function' && autoSeat(s);
+  if (p.kind !== 'bot' && !auto) return;
+  const cont = R.seq || R.cont || R.lcArmed;
+  const delay = FAST ? 30 : cont ? 520 : ({ slow: 1600, normal: 950, fast: 400 }[ST.speed] || 950), me = CUR;
+  CUR.botT = setTimeout(() => {
+    if (CUR !== me || G.round !== R || R.turn !== s || R.end || G.over) return;
+    if (p.kind !== 'bot' && !autoSeat(s)) return;                       // he came back in time
+    let d; try { d = TAI.decide(TE.view(G, s), p.kind === 'bot' ? p.lvl : 2); } catch (e) { console.error(e); d = null; }
+    let r = d ? TE.apply(G, s, d) : { ok: false };
+    if (!r.ok) r = TE.apply(G, s, R.seq ? { cl: 1 } : { d: 1 });
+    if (!r.ok && R.cont === 'must') { const V = TE.view(G, s), l = TE.legalV(V); if (l.length) TE.apply(G, s, { p: l[0], c: 0 }); }
+    after();
+  }, delay);
+}
+
+/* ---------- my actions ---------- */
+function act(a) {
+  const V = curView(); if (!myTurn(V)) return;
+  CUR.prevHand = V.hand.slice();
+  if (isGuest()) {
+    CUR.pending = true; netSend({ type: 'act', gid: NET.gid, a }); render();
+    const me = CUR; setTimeout(() => { if (CUR === me && CUR.pending) { CUR.pending = false; render(); } }, 9000);
+    return;
+  }
+  const r = TE.apply(CUR.G, CUR.me, a);
+  if (!r.ok) { toast(T('illegal')); beep('err'); return; }
+  CUR.sel = null; CUR.hintSel = null;
+  after();
+}
+function whyNot(V) {
+  if (V.draw2 > 0) return T('notLegalD2', { k: V.cfg.kingStops2 ? T('orKing') : '' });
+  if (V.seq) return T('notLegalSeq', { c: colChip(V.seq.c) });
+  return T('notLegal');
+}
+function tapCard(c, el) {
+  const V = curView(); if (!V || V.me < 0 || (CUR.mode === 'hot' && CUR.passing)) return;
+  if (!myTurn(V)) return;
+  if (!TE.canPlay(V, V.cfg, c)) { if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); } toast(whyNot(V), 2000); buzz(30); return; }
+  if (ST.oneTap || CUR.sel === c) { playCard(c); return; }
+  CUR.sel = c; render();
+}
+function playCard(c) {
+  const V = curView(), t = TE.typ(c);
+  if (t === TE.CHG || t === TE.SSEQ) { colorPicker(V, c, col => act({ p: c, c: col })); return; }
+  act({ p: c });
+}
+function colorPicker(V, c, cb) {
+  const cnt = [0, 1, 2, 3].map(k => V.hand.filter(x => x !== c && TE.col(x) === k).length);
+  const o = overlay('<h2>' + (TE.typ(c) === TE.SSEQ ? T('pickColorRun') : T('pickColor')) + '</h2><div class="picker">' + [0, 1, 2, 3].map(k => '<button class="p' + k + '" data-col="' + k + '" style="background:var(--k' + k + ')"><i>' + SHAPES[k] + '</i>' + esc(colName(k)) + '<small class="ltr">(' + cnt[k] + ')</small></button>').join('') + '</div><button class="btn wide" style="margin-top:12px" data-x>' + T('cancel') + '</button>');
+  o.onclick = e => { const b = e.target.closest('[data-col]'); if (b) { closeOv(o); cb(+b.dataset.col); } else if (e.target.closest('[data-x]')) closeOv(o); };
+}
+function doDraw() {
+  const V = curView(); if (!myTurn(V)) return;
+  if (V.seq) { toast(T('seqDrawErr')); return; }
+  if (V.cont === 'must') { toast(T('mustPlayErr')); return; }
+  act({ d: 1 });
+}
+function doClose() { const V = curView(); if (myTurn(V) && V.seq) act({ cl: 1 }); }
+function doLast() {
+  const V = curView(); if (!myTurn(V)) return;
+  if (!V.cfg.lastCard) { toast(T('lcOff')); return; }
+  if (V.lcArmed) return;
+  act({ lc: 1 });
+}
+function doHint() {
+  const V = curView(); if (!myTurn(V)) return;
+  CUR.hints++; const d = TAI.hint(V);
+  if (d.lc) { toast(T('hintLc'), 3200); return; }
+  if (d.cl) { toast(T('hintClose')); return; }
+  if (d.d) { toast(T('hintDraw')); return; }
+  CUR.sel = d.p; CUR.hintSel = d.p; render();
+  toast(d.c != null ? T('hintPlayC', { card: cardChip(d.p), c: colChip(d.c) }) : T('hintPlay', { card: cardChip(d.p) }), 3200);
+}
+function nextRound() {
+  if (!CUR || isGuest()) return;
+  if (!TE.nextRound(CUR.G)) return;
+  CUR.sel = null; CUR.ready = {}; closeAllOv();
+  if (CUR.mode === 'hot') CUR.me = -2;
+  after();
+}
+
+/* ---------- rendering ---------- */
+function render() {
+  if (!CUR || SCREEN !== 'game') return;
+  const V = curView(); if (!V) return;
+  if (CUR.mode === 'hot') passCheck(V);
+  if (CUR.sel != null && !V.hand.includes(CUR.sel)) CUR.sel = null;
+  renderTop(V); renderOpps(V); renderTable(V); renderHand(V); renderBar(V);
+  const tk = V.rn + ':' + V.turns + ':' + V.turn;
+  if (myTurn(V) && CUR.turnKey !== tk && V.turns > 0 && !V.seq && !V.cont) { beep('turn'); buzz(); }
+  CUR.turnKey = tk;
+  handleEvents(V); handleEnd(V); updateReady(); renderBubbles();
+}
+function renderTop(V) {
+  const mode = { cpu: T('mCpu'), hot: T('mHot'), net: T('mNet') }[CUR.mode];
+  $('#gTitle').textContent = isPoints(V) ? T('roundN', { n: V.rn }) + ' · ' + T('toPts', { n: V.cfg.target }) : T('game1') + ' · ' + T('pr_' + (V.cfg.preset || 'custom'));
+  $('#gSub').textContent = mode;
+  const gn = $('#gNet'); gn.classList.toggle('hide', CUR.mode !== 'net');
+  if (CUR.mode === 'net') { const st = LINK ? LINK.status : 'off'; gn.textContent = T('st_' + st); gn.className = 'net ' + (st === 'open' ? 'ok' : st === 'waiting' ? '' : 'warn'); }
+  $('#voice').classList.toggle('hide', CUR.mode !== 'net');
+}
+function seatOrder(V) { const n = V.players.length, out = [], base = V.me >= 0 ? V.me : -1; for (let k = 1; k <= n; k++) { const s = (base + k + n) % n; if (s !== V.me) out.push(s); } return out; }
+function renderOpps(V) {
+  $('#opps').classList.toggle('many', V.players.length - (V.me >= 0 ? 1 : 0) > 3);
+  const html = seatOrder(V).map(s => {
+    const p = V.players[s], ni = netInfo(s), auto = !!(ni && ni.auto);
+    let lk = '';
+    if (ST.showLacks && p.lacks) { for (let c = 0; c < 4; c++) if ((p.lacks >> c) & 1) lk += '<span class="k' + c + '">' + SHAPES[c] + '</span>'; lk = '<span class="lk" title="' + esc(T('lacks')) + '"><em>' + T('lacks') + ' </em>' + lk + '</span>'; }
+    const flag = V.pendWin === s ? '<span class="flag tk2">' + T('pend') + '</span>' : p.lc ? '<span class="flag">☝️ ' + T('lcFlag') + '</span>' : '';
+    return '<button class="opp' + (V.turn === s && !V.end ? ' turn' : '') + '" data-s="' + s + '">'
+      + '<img class="av" src="' + avSrc(pav(V, s)) + '" alt="">'
+      + '<span class="nm">' + (p.kind === 'bot' && V.players.length < 5 ? '🤖 ' : '') + esc(pname(V, s)) + (ni && !ni.online && p.kind !== 'bot' ? ' <span class="off">● ' + (auto ? T('autoPlays') : T('offline')) + '</span>' : '') + (ni && ni.talking ? ' 🎙' : '') + '</span>'
+      + '<span class="ct"><b class="ltr">' + p.count + '</b>' + (isPoints(V) ? '<span class="ltr">' + T('pts', { n: p.score }) + '</span>' : p.wins ? '<span>🏆<span class="ltr">' + p.wins + '</span></span>' : '') + lk + '</span>'
+      + flag + '</button>';
+  }).join('');
+  const el = $('#opps'); if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }       // unchanged → keep the same <img> (no flicker)
+}
+// quick messages, emoji, shouts and voice notes float in their own layer above everything
+function renderBubbles() {
+  const L = $('#bubbles'); if (!L) return;
+  if (!CUR || SCREEN !== 'game') { L.innerHTML = ''; return; }
+  const now = Date.now(), vw = innerWidth; let h = '';
+  for (const k in CUR.bubbles) {
+    const b = CUR.bubbles[k]; if (b.until <= now) { delete CUR.bubbles[k]; continue; }
+    const mine = +k === CUR.me, el = mine ? $('#cards') : document.querySelector('.opp[data-s="' + k + '"]'); if (!el) continue;
+    const r = el.getBoundingClientRect(), w = Math.min(vw * 0.8, 320);
+    let x = r.left + r.width / 2 - w / 2; x = Math.max(8, Math.min(vw - w - 8, x));
+    const pos = mine ? 'bottom:' + Math.round(innerHeight - r.top + 6) + 'px' : 'top:' + Math.round(r.bottom + 6) + 'px';
+    h += '<div style="position:absolute;' + pos + ';left:' + Math.round(x) + 'px;width:' + Math.round(w) + 'px;display:flex;justify-content:center"><div class="bubble ' + b.cls + (mine && b.cls !== 'shout' ? ' mine' : '') + '" ' + (b.url ? 'data-vm="' + k + '"' : '') + '>' + (mine || b.cls === 'shout' ? '' : '<b>' + esc(pname(curView(), +k)) + ':</b> ') + b.html + '</div></div>';
+  }
+  L.innerHTML = h;
+}
+function bubble(seat, html, cls, ms, url) {
+  if (!CUR) return;
+  CUR.bubbles[seat] = { html, cls: cls || '', until: Date.now() + (ms || 4500), url };
+  renderBubbles(); setTimeout(renderBubbles, (ms || 4500) + 50);
+}
+function evText(V, e) {
+  if (!e) return '';
+  const who = e.s === V.me ? T('you') : pname(V, e.s), W = esc(who);
+  switch (e.e) {
+    case 'play': return e.c != null ? T('ev_playC', { who: W, card: cardChip(e.id), c: colChip(e.c) }) : T('ev_play', { who: W, card: cardChip(e.id) });
+    case 'draw': return e.n === 1 ? T('ev_draw', { who: W }) : T('ev_drawN', { who: W, n: iso(e.n) });
+    case 'take': return T('ev_take', { who: W, n: iso(e.n) });
+    case 'close': return T('ev_close', { who: W, n: iso(e.n + 1) });
+    case 'lc': return T('ev_lc', { who: W });
+    case 'lcpen': return T('ev_lcpen', { who: W, n: iso(e.n) });
+    case 'back': return T('ev_back', { who: W, n: iso(e.n) });
+    case 'pend': return T('ev_pend', { who: W });
+    case 'fdraw': return T('ev_fdraw', { who: W });
+    case 'pdraw': return T('ev_pdraw', { who: W });
+    case 'shuf': return T('ev_shuf');
+  }
+  return '';
+}
+function statusText(V) {
+  const mine = myTurn(V), k = V.cfg.kingStops2 ? T('orKing') : '';
+  if (V.over) return T('gameOver');
+  if (V.end) return T('roundOver');
+  if (CUR.mode === 'hot' && CUR.passing) return T('passing');
+  if (CUR.pending) return T('sending');
+  if (V.me < 0 && CUR.mode === 'net') return T('spectatorNext') + ' · ' + T('turnOf', { n: esc(pname(V, V.turn)) });
+  if (mine) {
+    if (V.draw2 > 0) return T('yourTurnD2', { n: iso(V.draw2), k });
+    if (V.seq) return T('seqMine', { c: colChip(V.seq.c) });
+    if (V.cont === 'king') return T('kingFree');
+    if (V.cont === 'plus') return T('plusMore');
+    if (V.cont === 'must') return T('mustPlay');
+    return T('yourTurn');
+  }
+  if (V.seq) return T('seqOther', { n: esc(pname(V, V.turn)), c: colChip(V.seq.c) });
+  return V.players[V.turn].kind === 'bot' ? T('thinking', { n: esc(pname(V, V.turn)) }) : T('turnOf', { n: esc(pname(V, V.turn)) });
+}
+function renderTable(V) {
+  const mine = myTurn(V);
+  $('#status').innerHTML = statusText(V);
+  $('#deckStack').innerHTML = cardHTML(null) + cardHTML(null) + cardHTML(null);
+  $('#deckLb').innerHTML = T('deckN', { n: '<span class="ltr">' + V.deck + '</span>' });
+  const un = V.under.slice(-3);
+  const ph = un.map((c, i) => cardHTML(c, 'u' + (3 - un.length + i))).join('') + cardHTML(V.top, 'ptop', '', true)
+    + '<div class="halo" style="--hc:var(--k' + V.color + ')"></div>' + (V.draw2 > 0 ? '<div class="d2">+' + V.draw2 + '</div>' : '');
+  const pe = $('#pile'); if (pe.dataset.h !== ph) { pe.innerHTML = ph; pe.dataset.h = ph; }
+  $('#colorLine').innerHTML = '<i style="color:var(--k' + V.color + ')">' + SHAPES[V.color] + '</i>' + esc(T('colorNow', { c: colName(V.color) }));
+  const dw = $('#dirw'); dw.classList.toggle('hide', V.players.length < 3); dw.classList.toggle('ccw', V.dir < 0);
+  const sb = $('#seqBar'); sb.classList.toggle('hide', !V.seq);
+  if (V.seq) { sb.style.setProperty('--hc', 'var(--k' + V.seq.c + ')'); sb.innerHTML = mine ? T('seqMine', { c: colChip(V.seq.c) }) : T('seqOther', { n: esc(pname(V, V.turn)), c: colChip(V.seq.c) }); }
+  let last = null; for (let i = V.ev.length - 1; i >= 0; i--) if (V.ev[i].e !== 'shuf' || i === V.ev.length - 1) { last = V.ev[i]; break; }
+  $('#lastact').innerHTML = evText(V, last);
+  $('#table').classList.toggle('go', !!(mine && CUR.sel != null && TE.canPlay(V, V.cfg, CUR.sel)));
+}
+function renderHand(V) {
+  const el = $('#cards'), hidden = CUR.mode === 'hot' && CUR.passing, mine = myTurn(V);
+  if (hidden || V.me < 0) el.innerHTML = V.me < 0 && CUR.mode === 'net' ? '<span class="muted">' + T('spectator') + '</span>' : '<div class="hrow">' + V.hand.map(() => cardHTML(null)).join('') + '</div>';
+  else {
+    const prev = CUR.prevHand ? new Set(CUR.prevHand) : null;
+    const html = V.hand.map(c => {
+      const ok = TE.canPlay(V, V.cfg, c);
+      const cls = (CUR.sel === c ? 'sel ' : '') + (mine && ST.dim && !ok ? 'dim ' : '') + (CUR.hintSel === c ? 'hintc ' : '') + (prev && !prev.has(c) ? 'new' : '');
+      return cardHTML(c, cls, 'role="button" tabindex="0"', true);
+    });
+    const L = handLayout(V.hand.length), per = Math.ceil(html.length / L.rows); let out = '';
+    for (let r = 0; r < L.rows; r++) out += '<div class="hrow">' + html.slice(r * per, (r + 1) * per).join('') + '</div>';
+    el.innerHTML = out;
+    CUR.prevHand = null;
+  }
+  el.classList.toggle('wait', !mine);
+  $('#myCnt').textContent = V.me >= 0 && !hidden ? (V.hand.length === 1 ? T('oneCard') : T('cardsN', { n: V.hand.length })) : '';
+  $('#myScore').innerHTML = V.me >= 0 ? (isPoints(V) ? T('pts', { n: '<span class="ltr">' + V.players[V.me].score + '</span>' }) : V.players[V.me].wins ? '🏆 <span class="ltr">' + V.players[V.me].wins + '</span>' : '') : '';
+  requestAnimationFrame(sizeCards);
+}
+function renderBar(V) {
+  if (!V) return;
+  const mine = myTurn(V), dr = $('#bDraw');
+  dr.textContent = V.draw2 > 0 ? T('drawN', { n: V.draw2 }) : '🂠 ' + T('draw');
+  dr.disabled = !mine || !!V.seq || V.cont === 'must';
+  $('#bClose').classList.toggle('hide', !(mine && V.seq)); $('#bClose').textContent = '✓ ' + T('closeRun');
+  dr.classList.toggle('hide', !!(mine && V.seq));
+  const lc = $('#bLast'); lc.classList.toggle('hide', !V.cfg.lastCard);
+  lc.textContent = mine && V.lcArmed ? T('lastCardOn') : T('lastCard'); lc.classList.toggle('on', !!(mine && V.lcArmed)); lc.disabled = !mine;
+  $('#bHint').disabled = !mine;
+  $('#gbar').classList.toggle('hide', V.me < 0);
+}
+// card width, overlap and rows for the hand: visible width = (k-1)·step + card width per row
+function handLayout(n) {
+  const g = $('#game'), land = matchMedia('(orientation:landscape) and (max-height:560px)').matches;
+  const cw = $('#cards').clientWidth || (land ? g.clientWidth * 0.45 : g.clientWidth), W = cw - 12, H = g.clientHeight || innerHeight;
+  let hw = Math.max(48, Math.min(84, Math.floor((land ? H * 0.34 : H * 0.15) / 1.45)));
+  if (hw > W / 2.2) hw = Math.max(44, Math.floor(W / 2.2));
+  const maxPer = Math.max(2, Math.floor((W - hw) / (hw * 0.42)) + 1);
+  const rows = Math.min(3, Math.ceil(Math.max(1, n) / maxPer)), k = Math.ceil(Math.max(1, n) / rows);
+  if (rows > 1) hw = Math.max(44, Math.round(hw * (rows === 2 ? 0.9 : 0.8)));
+  const step = Math.min(hw + 6, k > 1 ? (W - hw) / (k - 1) : hw + 6);
+  return { hw, rows, ov: (hw - step) / 2, land, H };
+}
+function sizeCards() {
+  const g = $('#game'); if (!g || !g.classList.contains('on')) return;
+  const V = CUR ? curView() : null, L = handLayout(V ? V.hand.length : 8);
+  const tw = Math.max(50, Math.min(110, Math.floor((L.land ? L.H * 0.32 : L.H * 0.165) / 1.45)));
+  g.style.setProperty('--hw', L.hw + 'px'); g.style.setProperty('--ov', L.ov.toFixed(1) + 'px'); g.style.setProperty('--tw', tw + 'px');
+  const rows = $$('#cards>.hrow').length;
+  if (V && rows && rows !== L.rows && !CUR.passing && V.me >= 0) renderHand(V);
+}
+
+/* ---------- what happened since the last render: sounds, shouts, flying cards, stats ---------- */
+function seatEl(V, s) { return s === V.me ? $('#cards') : document.querySelector('.opp[data-s="' + s + '"]'); }
+function fly(fromEl, toEl, html, delay) {
+  if (FAST || !fromEl || !toEl || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect(); if (!a.width || !b.width) return;
+  const f = document.createElement('div'); f.className = 'flyer'; f.innerHTML = html;
+  const w = parseFloat(getComputedStyle($('#game')).getPropertyValue('--tw')) || 64;
+  f.style.left = (a.left + a.width / 2 - w / 2) + 'px'; f.style.top = (a.top + a.height / 2 - w * .72) + 'px'; f.style.setProperty('--w', w + 'px');
+  f.firstChild && f.firstChild.style.setProperty('--w', w + 'px');
+  document.body.appendChild(f);
+  setTimeout(() => { f.style.transform = 'translate(' + (b.left + b.width / 2 - a.left - a.width / 2) + 'px,' + (b.top + b.height / 2 - a.top - a.height / 2) + 'px) rotate(' + (Math.random() * 16 - 8) + 'deg)'; }, 20 + (delay || 0));
+  setTimeout(() => f.remove(), 520 + (delay || 0));
+}
+function handleEvents(V) {
+  const key = CUR.id + ':' + V.rn;
+  if (CUR.evKey !== key) { CUR.evKey = key; CUR.evSeen = V.ev.length ? V.ev[V.ev.length - 1].i - (V.turns === 0 ? V.ev.length : 0) : 0; }
+  const fresh = V.ev.filter(e => e.i > CUR.evSeen); if (!fresh.length) return;
+  CUR.evSeen = fresh[fresh.length - 1].i;
+  const mode = CUR.mode, track = mode !== 'hot' && V.me >= 0;
+  let sound = null;
+  fresh.forEach((e, k) => {
+    const s = e.s, el = s != null ? seatEl(V, s) : null;
+    if (e.e === 'play') {
+      const t = TE.typ(e.id);
+      sound = t === TE.P2 ? 'p2' : t === TE.STOP ? 'stop' : t === TE.KING ? 'king' : 'card';
+      if (s !== V.me) fly(el, $('#pile'), cardHTML(e.id), k * 90);
+      if (track && s === V.me && t === TE.P2) inc(mode, 'attacks');
+      if (ST.taunts && V.players[s] && V.players[s].kind === 'bot' && (t === TE.P2 || t === TE.STOP || t === TE.KING) && (e.i * 7) % 10 < 5) taunt(V, s, t === TE.P2 ? 'tn_p2' : t === TE.STOP ? 'tn_stop' : 'tn_king', e.i);
+    } else if (e.e === 'draw' || e.e === 'take' || e.e === 'back' || e.e === 'lcpen' || e.e === 'fdraw' || e.e === 'pdraw') {
+      sound = sound || 'draw';
+      for (let j = 0; j < Math.min(3, e.n || 1); j++) fly($('#deckStack'), el, cardHTML(null), k * 90 + j * 110);
+      if (track && s === V.me && (e.e === 'take' || e.e === 'back')) inc(mode, 'took', e.n);
+      if (track && s === V.me && e.e === 'lcpen') inc(mode, 'forgot');
+      if (e.e === 'lcpen') { bubble(s, '🙈 ' + T('ev_lcpen', { who: '', n: iso(e.n) }).replace(/^\s*/, ''), 'shout', 3000); sound = 'err'; }
+      if (e.e === 'back') bubble(s, '😱 +' + e.n, 'shout', 3000);
+      if (e.e === 'take' && e.n >= 4 && ST.taunts && V.players[s] && V.players[s].kind === 'bot') taunt(V, s, 'tn_take', e.i);
+    } else if (e.e === 'lc') { bubble(s, '☝️ ' + T('lastCard'), 'shout', 2600); sound = 'lc'; }
+    else if (e.e === 'close') { if (track && s === V.me) { inc(mode, 'runs'); const st = stat(mode); st.bestRun = Math.max(st.bestRun || 0, (e.n || 0) + 1); } }
+    else if (e.e === 'shuf') sound = 'shuffle';
+  });
+  if (sound) beep(sound);
+  if (track) saveStats();
+}
+function taunt(V, s, key, i) { const list = T(key).split('|'); bubble(s, esc(list[i % list.length]), '', 2600); }
+
+/* ---------- one phone: hide the hand between turns ---------- */
+function passCheck(V) {
+  const G = CUR.G, R = G.round;
+  if (V.end || V.over) { if (CUR.passOv) { closeOv(CUR.passOv); CUR.passOv = null; } CUR.passing = false; return; }
+  if (R.turn === CUR.me && !CUR.passing) return;
+  if (CUR.passing && CUR.passTo === R.turn) return;
+  CUR.passing = true; CUR.passTo = R.turn; CUR.sel = null;
+  if (CUR.passOv) closeOv(CUR.passOv);
+  const nm = esc(G.players[R.turn].name || T('player') + ' ' + (R.turn + 1));
+  const o = CUR.passOv = overlay('<img class="bigav" src="' + avSrc(G.players[R.turn].av || R.turn + 1) + '" alt=""><h2>' + T('passTo', { n: nm }) + '</h2><p class="muted">' + T('passHint') + '</p><p>' + evText(V, V.ev[V.ev.length - 1]) + '</p><button class="btn main wide" id="passGo">' + T('passGo', { n: nm }) + '</button>', 'pass');
+  o.querySelector('#passGo').onclick = () => { CUR.me = R.turn; CUR.passing = false; CUR.passOv = null; closeOv(o); render(); };
+}
+
+/* ---------- round end + game over ---------- */
+function handleEnd(V) {
+  if (!V.end) { if (CUR.resOv) { closeOv(CUR.resOv); CUR.resOv = null; } return; }
+  const key = CUR.id + ':' + V.rn;
+  if (CUR.endKey === key) return;
+  CUR.endKey = key;
+  trackRound(V);
+  const w = V.end.winner, st = $('#stamp'), b = st.querySelector('b'), mine = w === V.me && CUR.mode !== 'hot';
+  b.textContent = mine ? '🏆 ' + T('youWon') : '🏆 ' + pname(V, w); b.className = mine || CUR.mode === 'hot' || V.me < 0 ? '' : 'bad';
+  st.classList.remove('hide'); beep(mine || CUR.mode === 'hot' ? 'win' : 'lose'); buzz(mine ? 60 : 30);
+  if (ST.taunts && V.players[w].kind === 'bot') taunt(V, w, 'tn_win', V.rn);
+  setTimeout(() => { st.classList.add('hide'); if (CUR && CUR.endKey === key) { const v2 = curView(); if (v2.over) showOver(v2); else showResults(v2); } }, FAST ? 30 : 1500);
+}
+function handRows(V) {
+  const E = V.end;
+  return V.players.map((p, s) => {
+    const win = s === E.winner;
+    const sc = isPoints(V) ? T('rowPts', { s: '<span class="ltr">' + E.hp[s] + '</span>', a: '<span class="ltr">+' + E.add[s] + '</span>', t: '<b class="ltr">' + E.after[s] + '</b>' }) : (win ? '' : T('handPts', { n: '<span class="ltr">' + E.hp[s] + '</span>' }));
+    return '<div class="rp' + (win ? ' win' : '') + '"><div class="top"><span><img class="mini-av" src="' + avSrc(pav(V, s)) + '" alt="">' + esc(pname(V, s)) + (win ? '<span class="tag">★</span>' : '') + '</span><span>' + sc + '</span></div><div class="cs">' + E.hands[s].map(c => cardHTML(c)).join('') + '</div></div>';
+  }).join('');
+}
+function showResults(V) {
+  if (!V || !V.end || anyOvBlocking()) return;
+  if (CUR.resOv) closeOv(CUR.resOv);
+  const net = CUR.mode === 'net' && V.me >= 0;
+  const btn = net ? '<button class="btn main" id="rReady">' + T('ready') + '</button>' : V.me < 0 && CUR.mode === 'net' ? '' : '<button class="btn main" id="rNext">' + T('nextRound') + '</button>';
+  const o = CUR.resOv = overlay('<h2>' + T('roundN', { n: V.rn }) + '</h2><p>' + (V.end.stalled ? T('stalled') : T('winLine', { n: esc(pname(V, V.end.winner)) })) + '</p><div class="res">' + handRows(V) + '</div><div class="row"><button class="btn" id="rTable">🏆 ' + T('scoreTable') + '</button>' + btn + '</div>' + (CUR.mode === 'net' ? '<p class="rdline" id="rdLine"></p>' : ''));
+  const rb = o.querySelector('#rReady'); if (rb) rb.onclick = () => iAmReady();
+  updateReady();
+  o.querySelector('#rTable').onclick = () => scoreTable(curView());
+  const nx = o.querySelector('#rNext'); if (nx) nx.onclick = () => nextRound();
+}
+const anyOvBlocking = () => false;
+function readyInfo() {
+  // who still has to press "ready" (computers and absent players never hold the table up)
+  const V = curView(); if (!V || !V.end || V.over) return null;
+  const rd = isGuest() ? (CUR.rd || []) : Object.keys(CUR.ready || {}).map(Number);
+  const need = V.players.map((p, s) => s).filter(s => { const p = V.players[s]; if (p.kind === 'bot') return false; const ni = netInfo(s); return !(ni && !ni.online) && !(ni && ni.auto); });
+  return { need, rd, waiting: need.filter(s => !rd.includes(s)) };
+}
+function updateReady() {
+  const el = document.querySelector('#rdLine'); if (!el || CUR.mode !== 'net') return;
+  const R = readyInfo(); if (!R) return;
+  const V = curView(), mineDone = R.rd.includes(V.me);
+  el.innerHTML = T('readyN', { n: R.need.length - R.waiting.length, m: R.need.length }) + (R.waiting.length ? ' · ' + T('waitingFor', { n: R.waiting.map(s => esc(pname(V, s))).join(', ') }) : '')
+    + (CUR.host && mineDone && R.waiting.length ? ' <button class="btn small" id="rForce">' + T('startAnyway') + '</button>' : '');
+  const rb = document.querySelector('#rReady'); if (rb) { rb.disabled = mineDone; rb.textContent = mineDone ? '✓ ' + T('ready') : T('ready'); }
+  const f = document.querySelector('#rForce'); if (f) f.onclick = () => nextRound();
+}
+function iAmReady() {
+  if (isGuest()) { netSend({ type: 'ready', gid: CUR.id, rn: CUR.V.rn }); CUR.rd = (CUR.rd || []).concat(CUR.me); updateReady(); return; }
+  markReady(0);
+}
+function markReady(gs) {                                // host
+  if (!CUR || !CUR.G || !CUR.G.round.end || CUR.G.over) return;
+  CUR.ready = CUR.ready || {}; CUR.ready[gs] = true;
+  const R = readyInfo();
+  if (R && !R.waiting.length) { nextRound(); return; }
+  pushViews(); updateReady();
+}
+function trackRound(V) {
+  const mode = CUR.mode, me = V.me;
+  inc(mode, 'rounds');
+  if (V.over) {
+    inc(mode, 'games'); if (mode !== 'hot' && V.winner === me) inc(mode, 'wins');
+    if (mode === 'cpu') { const lv = Math.max(...V.players.filter(p => p.kind === 'bot').map(p => p.lvl)); inc('cpu', 'g' + lv); if (V.winner === me) inc('cpu', 'w' + lv); }
+    if (CUR.G) saveReplay();
+  }
+  saveStats();
+}
+function showOver(V) {
+  if (CUR.resOv) { closeOv(CUR.resOv); CUR.resOv = null; }
+  const iWon = V.winner === V.me && CUR.mode !== 'hot';
+  const title = CUR.mode === 'hot' || V.me < 0 ? T('winnerIs', { n: esc(pname(V, V.winner)) }) : iWon ? T('youWon') : T('youLost', { n: esc(pname(V, V.winner)) });
+  let table = '';
+  if (isPoints(V)) {
+    const order = V.players.map((p, s) => s).sort((a, b) => V.players[a].score - V.players[b].score);
+    table = '<table class="sc"><tr><th>#</th><th>' + T('player') + '</th><th>' + T('points') + '</th></tr>' + order.map((s, i) => '<tr' + (s === V.winner ? ' class="tot"' : '') + '><td>' + (i + 1) + '</td><td>' + esc(pname(V, s)) + '</td><td class="ltr">' + V.players[s].score + '</td></tr>').join('') + '</table>';
+  } else if (V.players.some(p => p.wins > 1)) {
+    table = '<h3 style="margin-top:10px">' + T('winsTable') + '</h3><div>' + V.players.map((p, s) => '<span class="pchip"><img class="mini-av" style="width:20px;height:20px;border-radius:50%" src="' + avSrc(pav(V, s)) + '" alt="">' + esc(pname(V, s)) + ' · <b class="ltr">' + p.wins + '</b></span>').join('') + '</div>';
+  }
+  const again = isGuest() ? '<p class="muted">' + T('waitHost') + '</p>' : '<button class="btn main" id="oAgain">' + T('playAgain') + '</button>';
+  const o = CUR.resOv = overlay('<h2>' + (iWon ? '🏆 ' : '') + title + '</h2>' + (V.end ? '<p>' + (V.end.stalled ? T('stalled') : T('winLine', { n: esc(pname(V, V.end.winner)) })) + '</p><div class="res">' + handRows(V) + '</div>' : '') + table
+    + (CUR.hints ? '<p class="muted">' + T('hintsUsed', { n: CUR.hints }) + '</p>' : '')
+    + '<div class="row" style="margin-top:12px"><button class="btn" id="oHome">' + T('home') + '</button><button class="btn" id="oRep">🎬 ' + T('replay') + '</button>' + (isGuest() ? '' : again) + '</div>' + (isGuest() ? again : ''));
+  o.querySelector('#oHome').onclick = () => { closeAllOv(); leaveGame(); };
+  o.querySelector('#oRep').onclick = () => { const r = REPLAYS[0]; if (r) openReplay(r); else toast(T('noReplay')); };
+  const ag = o.querySelector('#oAgain'); if (ag) ag.onclick = () => { closeAllOv(); playAgain(); };
+}
+function playAgain() {
+  if (!CUR) return;
+  const G = CUR.G;
+  if (CUR.mode === 'net') { netStart(true); return; }
+  const players = G.players.map(p => ({ name: p.name, kind: p.kind, lvl: p.lvl, av: p.av, pe: p.pe, wins: G.cfg.scoring === 'points' ? 0 : p.wins }));
+  startLocal(CUR.mode, players, G.cfg);
+}
+function leaveGame() {
+  if (CUR && CUR.G && CUR.G.over && CUR.mode !== 'net') LS.del('game');
+  if (CUR) clearTimeout(CUR.botT);
+  closeAllOv(); show('home'); renderHome();
+}
+function scoreTable(V) {
+  if (!V) return;
+  const ps = V.players;
+  let body;
+  if (isPoints(V)) {
+    const head = '<tr><th>#</th>' + ps.map((p, s) => '<th>' + esc(pname(V, s)) + '</th>').join('') + '</tr>';
+    const rows = V.history.map(h => '<tr><td>' + h.rn + '</td>' + ps.map((p, s) => '<td><span class="ltr">' + (s === h.w ? '★' : '+' + h.add[s]) + '</span></td>').join('') + '</tr>').join('');
+    const tot = '<tr class="tot"><td>Σ</td>' + ps.map(p => '<td class="ltr">' + p.score + '</td>').join('') + '</tr>';
+    body = '<div style="overflow-x:auto"><table class="sc">' + head + rows + tot + '</table></div><p class="muted" style="font-size:13px">' + T('tableKey') + '</p>';
+  } else body = '<h3>' + T('winsTable') + '</h3><table class="sc">' + ps.map((p, s) => '<tr><td style="text-align:start">' + esc(pname(V, s)) + '</td><td class="ltr">' + p.wins + '</td></tr>').join('') + '</table>';
+  const o = overlay('<h2>🏆 ' + T('scoreTable') + '</h2>' + body + '<button class="btn wide" style="margin-top:10px" data-x>' + T('close') + '</button>');
+  o.querySelector('[data-x]').onclick = () => closeOv(o);
+}
+function gameMenu() {
+  const o = overlay('<h2>' + T('menu') + '</h2><div class="seats">'
+    + '<button class="btn" data-m="rules">📖 ' + T('rules') + '</button>'
+    + '<button class="btn" data-m="sound">' + (ST.sound ? '🔇 ' + T('soundOff') : '🔊 ' + T('soundOn')) + '</button>'
+    + '<button class="btn" data-m="big">↔️ ' + T('bigBoard') + '</button>'
+    + '<button class="btn" data-m="quit" style="border-color:var(--bad);color:var(--bad)">' + T('quitGame') + '</button>'
+    + '<button class="btn" data-m="x">' + T('close') + '</button></div>');
+  o.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const m = b.dataset.m;
+    if (m === 'x') closeOv(o);
+    else if (m === 'rules') { closeOv(o); openRules(true); }
+    else if (m === 'sound') { ST.sound = !ST.sound; saveST(); closeOv(o); }
+    else if (m === 'big') { closeOv(o); bigBoard(); }
+    else if (m === 'quit') { closeOv(o); confirmBox(T('quitQ'), T('quitGame'), quitGame); }
+  };
+}
+function bigBoard() {
+  const d = document.documentElement;
+  const p = d.requestFullscreen ? d.requestFullscreen() : null;
+  Promise.resolve(p).then(() => screen.orientation && screen.orientation.lock ? screen.orientation.lock('landscape') : null).catch(() => {}).then(() => setTimeout(sizeCards, 300));
+  if (!d.requestFullscreen) toast(T('rotateHint'));
+}
+function quitGame() {
+  if (!CUR) return;
+  clearTimeout(CUR.botT);
+  if (CUR.mode === 'net') netLeave(true);
+  else LS.del('game');
+  CUR = null; closeAllOv(); show('home'); renderHome();
+}
+function personaCard(V, s) {
+  const p = V.players[s]; if (!p) return;
+  const o = overlay('<div class="persona"><img src="' + avSrc(pav(V, s)) + '" alt=""><h2 style="margin-top:8px">' + esc(pname(V, s)) + '</h2>' + (p.kind === 'bot' && p.pe >= 0 ? '<p style="font-size:16px">' + esc(T('ps_' + p.pe)) + '</p><p class="muted">' + T('level') + ': ' + lvlName(p.lvl) + '</p>' : '') + '<p class="muted">' + (p.count === 1 ? T('oneCard') : T('cardsN', { n: p.count })) + '</p></div><button class="btn wide" data-x>' + T('close') + '</button>');
+  o.querySelector('[data-x]').onclick = () => closeOv(o);
+}
+
+/* ---------- input: forgiving taps ---------- */
+function bindGame() {
+  $('#cards').addEventListener('click', e => { const el = e.target.closest('.tk[data-c]'); if (el && CUR) tapCard(+el.dataset.c, el); });
+  $('#cards').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } });
+  // a tap on the table with a card selected: on (or near) the pile plays it, on the deck draws; a far tap keeps the selection
+  $('#table').addEventListener('click', e => {
+    if (!CUR) return; const V = curView(); if (!myTurn(V)) return;
+    if (e.target.closest('#deckbox')) { doDraw(); return; }
+    if (CUR.sel == null) return;
+    const pb = $('#pilebox').getBoundingClientRect(), cx = pb.left + pb.width / 2, cy = pb.top + pb.height / 2;
+    if (e.target.closest('#pilebox') || Math.hypot(e.clientX - cx, e.clientY - cy) < Math.max(pb.width, pb.height) * 0.95) { if (TE.canPlay(V, V.cfg, CUR.sel)) playCard(CUR.sel); }
+  });
+  $('#opps').addEventListener('click', e => { const b = e.target.closest('.opp'); if (b && CUR) personaCard(curView(), +b.dataset.s); });
+  $('#bDraw').onclick = doDraw; $('#bClose').onclick = doClose; $('#bLast').onclick = doLast; $('#bHint').onclick = doHint;
+  $('#gScore').onclick = () => scoreTable(curView());
+  $('#gMenu').onclick = gameMenu;
+  $('#gBack').onclick = () => { if (CUR) clearTimeout(CUR.botT); closeAllOv(); show('home'); renderBubbles(); renderHome(); };
+  $('#bubbles').addEventListener('click', e => { const b = e.target.closest('[data-vm]'); if (b) { const bb = CUR.bubbles[b.dataset.vm]; if (bb && bb.url) new Audio(bb.url).play().catch(() => {}); } });
+  addEventListener('resize', () => requestAnimationFrame(() => { sizeCards(); renderBubbles(); }));
+}
+
+/* ---------- replays (seed + actions → every state) ---------- */
+function saveReplay() {
+  const G = CUR.G; if (!G || !G.log || !G.log.length) return;
+  const rec = { id: CUR.id, date: Date.now(), mode: CUR.mode, players: G.players.map(p => ({ name: p.name, kind: p.kind, lvl: p.lvl, av: p.av, pe: p.pe })), cfg: G.cfg, seed: G.seed, log: G.log, winner: G.winner, me: CUR.mode === 'hot' ? 0 : CUR.me };
+  addReplay(rec);
+  if (CUR.mode === 'net' && CUR.host) netSendAll({ type: 'rep', rec });
+}
+function addReplay(rec) { REPLAYS = [rec].concat(REPLAYS.filter(r => r.id !== rec.id)).slice(0, 10); LS.set('replays', REPLAYS); }
+function openReplay(rec) {
+  let ri = 0, fi = 0, frames = build(0);
+  function build(i) { const L = rec.log[i]; return TE.replayRound(rec.players, rec.cfg, rec.seed, L.rn, L.st, L.sc, L.acts); }
+  const RV = { players: rec.players.map(p => Object.assign({ count: 0 }, p)), me: -9, cfg: rec.cfg };
+  const o = overlay('<div class="rv" id="rvBox"></div>');
+  function draw() {
+    const L = rec.log[ri], f = frames[fi];
+    const lines = fi === 0 ? T('rvDeal') : f.ev.filter(e => e.i > (frames[fi - 1].ev.slice(-1)[0] || { i: 0 }).i).map(e => evText(RV, e)).join(' · ') || evText(RV, f.ev[f.ev.length - 1]);
+    o.querySelector('#rvBox').innerHTML = '<h2>🎬 ' + (rec.log.length > 1 ? T('roundN', { n: L.rn }) + ' <span class="muted" style="font-size:15px">(' + (ri + 1) + '/' + rec.log.length + ')</span>' : T('replay')) + '</h2>'
+      + '<p style="min-height:48px">' + lines + (f.end ? ' · ' + T('winLine', { n: esc(pname(RV, f.end.winner)) }) : '') + '</p>'
+      + '<div class="rp"><div class="top"><span>' + T('colorNow', { c: colChip(f.color) }) + (f.draw2 ? ' · <b class="ltr">+' + f.draw2 + '</b>' : '') + '</span><span>' + T('deckN', { n: f.deck }) + '</span></div><div class="cs">' + cardHTML(f.top) + '</div></div>'
+      + '<div class="hands">' + f.hands.map((h, s) => '<div class="rp' + (f.turn === s && !f.end ? ' win' : '') + '"><div class="top"><span><img class="mini-av" src="' + avSrc(rec.players[s].av || s + 1) + '" alt="">' + esc(pname(RV, s)) + '</span><span class="ltr">' + h.length + '</span></div><div class="cs">' + h.map(c => cardHTML(c)).join('') + '</div></div>').join('') + '</div>'
+      + '<div class="row" style="margin-top:12px"><button class="btn" data-r="pr">⏮</button><button class="btn" data-r="p">◀</button><span class="ltr" style="text-align:center">' + fi + '/' + (frames.length - 1) + '</span><button class="btn" data-r="n">▶</button><button class="btn" data-r="nr">⏭</button></div>'
+      + '<button class="btn wide" style="margin-top:8px" data-r="x">' + T('close') + '</button>';
+  }
+  o.onclick = e => {
+    const b = e.target.closest('[data-r]'); if (!b) return; const r = b.dataset.r;
+    if (r === 'x') return closeOv(o);
+    if (r === 'n' && fi < frames.length - 1) fi++;
+    else if (r === 'p' && fi > 0) fi--;
+    else if (r === 'nr') { if (ri < rec.log.length - 1) { ri++; frames = build(ri); fi = 0; } else fi = frames.length - 1; }
+    else if (r === 'pr') { if (ri > 0) { ri--; frames = build(ri); } fi = 0; }
+    draw();
+  };
+  draw();
+}
+
+/* ---- online.js ---- */
+/* =====================================================================
+   TrickyNest — online over NestLink 1.1
+   The host is the dealer: it owns the full game and sends every guest ONLY
+   its own view (sendTo). Guests send intents; the host validates and applies.
+   ===================================================================== */
+let LINK = null;
+let NET = LS.get('net', null);          // {role, sess, gid, map, bots, cfg, lobby, wins, G (host), V (guest)}
+let netSaveT = null;
+function saveNet() {
+  if (!NET) { LS.del('net'); return; }
+  if (CUR && CUR.mode === 'net') { if (CUR.host) NET.G = CUR.G; else NET.V = CUR.V; NET.gid = CUR.id; }
+  LS.set('net', NET);
+}
+const saveNetSoon = () => { clearTimeout(netSaveT); netSaveT = setTimeout(saveNet, 250); };
+const netSend = d => { if (LINK) LINK.sendTo(0, d); };
+const netSendAll = d => { if (LINK) LINK.send(d); };
+const hostSide = () => NET && NET.role === 'host';
+const gameSeatOf = link => NET && NET.map && NET.map[link] != null ? NET.map[link] : -1;
+function linkOf(gs) { if (!NET || !NET.map) return null; for (const k in NET.map) if (NET.map[k] === gs) return +k; return null; }
+// the roster name carries the chosen avatar: "name\u0001NN"
+const myLinkName = () => (ST.name || T('player')).slice(0, 16) + '\u0001' + String(myAv()).padStart(2, '0');
+function splitName(raw, seat) { const [n, a] = String(raw || '').split('\u0001'); return { name: n || T('player') + ' ' + (seat + 1), av: +a || hashAv(n) }; }
+// a player who dropped out for 30 seconds is covered by the computer until he is back
+const AUTO_MS = 30000;
+function autoSeat(gs) {
+  if (!CUR || CUR.mode !== 'net' || !CUR.host || !CUR.G || gs === 0) return false;
+  const p = CUR.G.players[gs]; if (!p || p.kind !== 'human') return false;
+  const L = linkOf(gs); if (L == null) return false;
+  const r = LINK && LINK.roster.find(x => x.seat === L);
+  if (r && r.online) return false;
+  const since = (NET.offSince || {})[L];
+  return !!since && Date.now() - since >= AUTO_MS;
+}
+function trackOffline() {
+  if (!hostSide() || !LINK) return;
+  NET.offSince = NET.offSince || {};
+  for (const p of LINK.roster) { if (p.seat === 0) continue; if (p.online) delete NET.offSince[p.seat]; else if (!NET.offSince[p.seat]) NET.offSince[p.seat] = Date.now(); }
+  if (CUR && CUR.G) for (const k in NET.map) if (+k !== 0 && !LINK.roster.some(p => p.seat === +k) && !NET.offSince[k]) NET.offSince[k] = Date.now();
+}
+setInterval(() => {
+  if (!CUR || CUR.mode !== 'net' || !CUR.host || !CUR.G || CUR.G.over) return;
+  trackOffline();
+  const R = CUR.G.round, was = CUR.autoNow || '', now = CUR.G.players.map((p, s) => autoSeat(s) ? 1 : 0).join('');
+  if (now !== was) { CUR.autoNow = now; pushViews(); if (SCREEN === 'game') renderOpps(curView()); }
+  if (R.end) { const ri = readyInfo(); if (ri && ri.need.length && !ri.waiting.length && Object.keys(CUR.ready || {}).length) nextRound(); return; }
+  if (autoSeat(R.turn)) scheduleBot();
+}, 2000);
+function netInfo(gs) {
+  if (!CUR || CUR.mode !== 'net') return null;
+  const L = isGuest() ? (CUR.lk ? linkOfIn(CUR.lk, gs) : null) : linkOf(gs); if (L == null) return null;
+  const r = (LINK ? LINK.roster : []).find(p => p.seat === L);
+  const off = isGuest() ? (CUR.offl || []).includes(gs) : !(r && r.online);
+  return { online: L === (LINK && LINK.seat) ? true : !off, talking: !!CUR.talk[gs], auto: isGuest() ? (CUR.autoL || []).includes(gs) : autoSeat(gs) };
+}
+function linkOfIn(map, gs) { for (const k in map) if (map[k] === gs) return +k; return null; }
+// keep only the newest message of a type in each resend buffer (views are full snapshots)
+function compact(type) {
+  const S = LINK && LINK.session; if (!S || !S.links) return;
+  for (const k in S.links) { const out = S.links[k].out; let seen = false; for (let i = out.length - 1; i >= 0; i--) { const d = out[i].d; if (d && d.type === type) { if (seen) out[i].d = { type: 'x' }; seen = true; } } }
+}
+
+function netInit() {
+  if (LINK) return LINK;
+  LINK = NestLink.create({
+    app: 'trickynest', version: APP_VERSION, maxPlayers: 6,
+    name: myLinkName,
+    persist: s => { if (!NET) return; NET.sess = s; saveNet(); },          // immediately: the message counters must survive a refresh
+    onStatus: (st) => { if (st === 'notfound') toast(T('roomNotFound')); if (st === 'full') { toast(T('roomFull')); NET = null; saveNet(); } if (st === 'error' && LINK && LINK.error === 'load') toast(T('netLoadFail')); refreshNetUI(); },
+    onCode: () => { refreshNetUI(); },
+    onJoin: () => { if (hostSide()) lobbyChanged(); },
+    onRoster: () => { if (hostSide()) { trackOffline(); lobbyChanged(); if (CUR && CUR.mode === 'net' && CUR.G) { pushViews(); if (SCREEN === 'game') render(); } } refreshNetUI(); },
+    onMessage: onNetMsg,
+    onEmoji: (e, from) => { const gs = gameSeatOf(from), one = /^\p{Extended_Pictographic}/u.test(e) && [...e].length <= 2; if (CUR && CUR.mode === 'net' && gs >= 0 && SCREEN === 'game') { bubble(gs, esc(e), one ? 'big' : '', one ? 3500 : 6000); beep('turn'); } else toast(esc(e)); },
+    onTalk: (seat, on) => { const gs = gameSeatOf(seat); if (CUR && gs >= 0) { CUR.talk[gs] = on; if (SCREEN === 'game') renderOpps(curView()); } },
+    onVoiceMsg: (url, sec, seat, mine) => {
+      if (mine) { toast(T('vmSent')); return; }
+      const gs = gameSeatOf(seat); const a = new Audio(url); a.play().catch(() => toast(T('tapToHear')));
+      if (CUR && gs >= 0) bubble(gs, '▶ <span class="ltr">' + sec + 's</span>', 'vm', 15000, url); else toast('🎤 ' + T('vmGot'));
+    },
+    onRecState: rec => { const b = $('#vRec'); b.classList.toggle('on', !!rec); b.textContent = rec ? '⏹ ' + T('stop') : '⏺'; },
+    onMicError: () => toast(T('micDenied'), 4000),
+    onAudioBlocked: () => toast(T('tapToHear')),
+    onVersion: () => toast(T('versionWarn'), 5000)
+  });
+  return LINK;
+}
+function refreshNetUI() { if (SCREEN === 'online') renderNet(); if (SCREEN === 'game' && CUR && CUR.mode === 'net') renderTop(curView()); refreshPill(); }
+function refreshPill() { const p = $('#netPill'); if (!p) return; const st = LINK ? LINK.status : 'off'; p.textContent = T('st_' + st); p.className = 'net ' + (st === 'open' ? 'ok' : st === 'off' || st === 'waiting' ? '' : 'warn'); }
+
+/* ---------- host: lobby ---------- */
+function lobbyList(onlyOnline) {
+  const hum = (LINK ? LINK.roster : []).slice().sort((a, b) => a.seat - b.seat).map(p => { const sn = p.seat === 0 ? { name: ST.name || T('host'), av: myAv() } : splitName(p.name, p.seat); return { kind: 'human', link: p.seat, name: sn.name, av: sn.av, online: p.seat === 0 ? true : !!p.online }; });
+  NET.bpe = NET.bpe || [];
+  const bots = (NET.bots || []).map((l, i) => { if (NET.bpe[i] == null) { const used = new Set(NET.bpe.concat(hum.map(h => h.av - 1))); let k = 0; while (used.has(k) && k < AVN) k++; NET.bpe[i] = k % AVN; } return { kind: 'bot', lvl: l, pe: NET.bpe[i], av: NET.bpe[i] + 1, name: '', online: true }; });
+  return hum.filter(x => !onlyOnline || x.online).concat(bots).slice(0, 6);
+}
+const lobbyName = x => x.kind === 'bot' ? T('pn_' + x.pe) : x.name;
+function lobbyChanged() {
+  if (!hostSide() || !LINK) return;
+  NET.lobby = { list: lobbyList(), cfg: NET.cfg, playing: !!(CUR && CUR.mode === 'net' && CUR.G && !CUR.G.over) };
+  netSendAll({ type: 'lobby', lobby: NET.lobby }); compact('lobby'); saveNetSoon(); refreshNetUI();
+}
+function netHost() {
+  if (!ST.name) { toast(T('nameFirst')); $('#netName') && $('#netName').focus(); return; }
+  netInit(); if (CUR && CUR.mode === 'net') CUR = null;
+  NET = { role: 'host', sess: null, gid: null, map: {}, bots: [], bpe: [], cfg: Object.assign({}, ST.rules), lobby: null, wins: {} };
+  LINK.host(); refreshNetUI();
+}
+function netJoin(code) {
+  code = (code || '').trim().toUpperCase();
+  if (!/^[A-Z0-9]{5}$/.test(code)) { toast(T('badCode')); return; }
+  if (!ST.name) { toast(T('nameFirst')); $('#netName') && $('#netName').focus(); return; }
+  netInit(); if (CUR && CUR.mode === 'net') CUR = null;
+  NET = { role: 'guest', sess: null, gid: null, map: {}, lobby: null, V: null };
+  LINK.join(code); refreshNetUI();
+}
+// start (or restart) with everyone in the room right now — people who joined during the last game are dealt in
+function netStart(rematch) {
+  const list = lobbyList(true);
+  if (list.filter(x => x.kind === 'human').length < 2) { toast(T('needFriend')); return; }
+  if (rematch && CUR && CUR.G && CUR.G.cfg.scoring !== 'points') CUR.G.players.forEach((p, s) => { const L = linkOf(s); NET.wins[p.kind === 'bot' ? 'b' + p.pe : 'h' + L] = p.wins; });
+  NET.map = {}; list.forEach((x, i) => { if (x.kind === 'human') NET.map[x.link] = i; });
+  const players = list.map(x => ({ name: x.name, kind: x.kind, lvl: x.lvl, av: x.av, pe: x.kind === 'bot' ? x.pe : -1, wins: NET.cfg.scoring === 'points' ? 0 : (NET.wins[x.kind === 'bot' ? 'b' + x.pe : 'h' + x.link] || 0) }));
+  const G = TE.newGame(players, NET.cfg);
+  NET.gid = 'n' + Date.now().toString(36); NET.offSince = {};
+  newCur('net', G, 0, { id: NET.gid });
+  closeAllOv(); show('game'); lobbyChanged(); after();
+  if (rematch) toast(T('newGameN', { n: list.length }));
+}
+function pushViews() {
+  if (!LINK || !CUR || !CUR.G) return;
+  const offl = [], autoL = [];
+  CUR.G.players.forEach((p, s) => { const ni = netInfo(s); if (ni && !ni.online) offl.push(s); if (autoSeat(s)) autoL.push(s); });
+  for (const p of LINK.roster) {
+    if (p.seat === 0) continue;
+    const gs = gameSeatOf(p.seat);
+    LINK.sendTo(p.seat, { type: 'view', gid: CUR.id, lk: NET.map, offl, autoL, rd: Object.keys(CUR.ready || {}).map(Number), V: TE.view(CUR.G, gs) });
+  }
+  compact('view'); saveNetSoon();
+}
+
+/* ---------- messages ---------- */
+function onNetMsg(d, from) {
+  if (!d || !NET) return;
+  if (hostSide()) {
+    if (d.type === 'act' && CUR && CUR.mode === 'net' && CUR.G) {
+      const gs = gameSeatOf(from); if (d.gid !== CUR.id || gs < 0) return;
+      const r = TE.apply(CUR.G, gs, d.a || {});
+      if (!r.ok) { pushViews(); return; }
+      after();
+    }
+    if (d.type === 'ready' && CUR && CUR.mode === 'net' && CUR.G && d.gid === CUR.id && d.rn === CUR.G.rn) { const gs = gameSeatOf(from); if (gs >= 0) markReady(gs); }
+    return;
+  }
+  // guest
+  if (d.type === 'lobby') { NET.lobby = d.lobby; saveNetSoon(); refreshNetUI(); return; }
+  if (d.type === 'view') {
+    NET.gid = d.gid; NET.map = d.lk || {};
+    if (!CUR || CUR.mode !== 'net' || CUR.id !== d.gid) {
+      const fresh = !!(CUR && CUR.mode === 'net');           // the host dealt a new game (a rematch)
+      newCur('net', null, d.V.me, { host: false, id: d.gid });
+      if (SCREEN === 'online' || SCREEN === 'game') { closeAllOv(); show('game'); }
+      else if (fresh) toast(T('hostNewGame'), 4000);
+    }
+    if (CUR.rd && d.V.rn !== (CUR.V && CUR.V.rn)) CUR.rd = [];
+    CUR.V = d.V; CUR.me = d.V.me; CUR.pending = false; CUR.rd = d.rd || []; CUR.lk = d.lk; CUR.offl = d.offl || []; CUR.autoL = d.autoL || []; NET.V = d.V; saveNetSoon();
+    if (SCREEN === 'game') render();
+    return;
+  }
+  if (d.type === 'rep') { const rec = Object.assign({}, d.rec, { me: CUR ? CUR.me : 0 }); addReplay(rec); return; }
+  if (d.type === 'bye') { toast(T('hostLeft'), 4000); netLeave(false); if (SCREEN === 'game' || SCREEN === 'online') { closeAllOv(); show('home'); renderHome(); } }
+}
+function netLeave(sayBye) {
+  const L = LINK;
+  if (L && sayBye && hostSide()) { L.send({ type: 'bye' }); setTimeout(() => L.close(), 400); } else if (L) L.close();
+  LINK = null; NET = null; LS.del('net');
+  if (CUR && CUR.mode === 'net') CUR = null;
+}
+function netResume() {
+  if (!NET || !NET.sess) return false;
+  netInit(); LINK.resume(NET.sess);
+  if (NET.role === 'host' && NET.G) { newCur('net', NET.G, 0, { id: NET.gid }); closeAllOv(); show('game'); after(); }
+  else if (NET.role === 'guest' && NET.V) { newCur('net', null, NET.V.me, { host: false, id: NET.gid, V: NET.V }); closeAllOv(); show('game'); render(); }
+  else { show('online'); renderNet(); }
+  return true;
+}
+
+/* ---------- online screen ---------- */
+function renderNet() {
+  const B = $('#netBody'); refreshPill();
+  if (!NET) {
+    const q = new URLSearchParams(location.search).get('join') || '';
+    B.innerHTML = '<div class="card"><label class="f">' + T('yourName') + '<input id="netName" maxlength="16" value="' + esc(ST.name) + '"></label></div>'
+      + '<div class="card"><h3>' + T('newRoom') + '</h3><p class="muted">' + T('newRoomD') + '</p><button class="btn main wide" id="nHost">' + T('createRoom') + '</button></div>'
+      + '<div class="card"><h3>' + T('joinRoom') + '</h3><div class="row"><input id="nCode" maxlength="5" placeholder="AB3CD" value="' + esc(q.toUpperCase()) + '" style="text-transform:uppercase;letter-spacing:4px;text-align:center;direction:ltr;font-size:22px"><button class="btn main" id="nJoin" style="flex:.6">' + T('join') + '</button></div></div>'
+      + '<p class="muted" style="font-size:13px">' + T('netNote') + '</p>';
+    $('#netName').oninput = e => { ST.name = e.target.value.trim().slice(0, 16); saveST(); };
+    $('#nHost').onclick = netHost; $('#nJoin').onclick = () => netJoin($('#nCode').value);
+    return;
+  }
+  const host = hostSide(), code = LINK && LINK.session ? LINK.session.code : (NET.sess && NET.sess.code) || '';
+  const list = host ? lobbyList() : (NET.lobby ? NET.lobby.list : []);
+  const playing = CUR && CUR.mode === 'net' && (CUR.G || CUR.V) && !(CUR.G ? CUR.G.over : CUR.V.over);
+  let h = '<div class="card" style="text-align:center"><p class="muted">' + T('roomCode') + '</p><div class="code">' + esc(code) + '</div>'
+    + '<div class="row" style="margin-top:8px"><button class="btn" id="nWa">💬 WhatsApp</button><button class="btn" id="nCopy">🔗 ' + T('copyLink') + '</button></div></div>';
+  const nHum = list.filter(y => y.kind === 'human').length;
+  h += '<div class="card"><h3>' + T('players') + ' <span class="ltr">(' + list.length + '/6)</span></h3><div class="seats">' + (list.length ? list.map((x, i) => '<div class="seat"><span class="d' + (x.online ? '' : ' no') + '"></span><img src="' + avSrc(x.av) + '" alt=""><b>' + (x.kind === 'bot' ? '🤖 ' : '') + esc(lobbyName(x)) + (x.kind === 'bot' ? ' · ' + lvlName(x.lvl) : '') + (x.link === 0 && x.kind === 'human' ? ' · ' + T('host') : '') + '</b>' + (host && x.kind === 'bot' ? '<button class="btn small" data-rm="' + (i - nHum) + '">✕</button>' : '') + '</div>').join('') : '<p class="muted">' + T('connecting') + '</p>') + '</div>';
+  if (host && list.length < 6) h += '<div class="row" style="margin-top:10px"><select id="nBotLvl">' + [0, 1, 2].map(l => '<option value="' + l + '"' + (l === ST.botLvl ? ' selected' : '') + '>' + lvlName(l) + '</option>').join('') + '</select><button class="btn" id="nAddBot">+ 🤖 ' + T('addBot') + '</button></div>';
+  if (list.length >= 5) h += '<p class="muted" style="font-size:13px;margin:8px 0 0">🎙 ' + T('voiceTip') + '</p>';
+  h += '</div>';
+  if (host && !playing) h += '<div class="card"><h3>' + T('rulesTitle') + '</h3><div id="nRules"></div></div><button class="btn main wide" id="nStart">' + T('startGame') + '</button>';
+  else if (!host && !playing) h += '<div class="card"><p>' + T('waitStart') + '</p>' + (NET.lobby ? '<p class="muted" style="font-size:14px">' + rulesSummary(NET.lobby.cfg) + '</p>' : '') + '</div>';
+  if (playing) h += '<button class="btn main wide" id="nBackGame">' + T('backToGame') + '</button>';
+  h += '<button class="btn wide" id="nLeave" style="border-color:var(--bad);color:var(--bad)">' + T('leaveRoom') + '</button>';
+  B.innerHTML = h;
+  const url = LINK ? LINK.inviteURL() : '';
+  $('#nWa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(T('inviteMsg', { n: ST.name || '', c: code }) + ' ' + url), '_blank');
+  $('#nCopy').onclick = () => { (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast(T('copied'))).catch(() => toast(esc(url), 5000)); };
+  B.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { const i = +b.dataset.rm; NET.bots.splice(i, 1); NET.bpe.splice(i, 1); lobbyChanged(); });
+  const ab = $('#nAddBot'); if (ab) ab.onclick = () => { NET.bots.push(+$('#nBotLvl').value); lobbyChanged(); };
+  if ($('#nRules')) rulesEditor($('#nRules'), NET.cfg, () => { lobbyChanged(); });
+  const s = $('#nStart'); if (s) s.onclick = () => netStart(false);
+  const bg = $('#nBackGame'); if (bg) bg.onclick = () => { show('game'); render(); };
+  $('#nLeave').onclick = () => confirmBox(T('leaveQ'), T('leaveRoom'), () => { netLeave(true); renderNet(); });
+}
+
+/* ---------- voice bar ---------- */
+const EMOJIS = ['😂', '😈', '😎', '😡', '👏', '🙏', '🔥', '🃏'];
+function bindVoice() {
+  const ptt = $('#vPtt');
+  const down = e => { e.preventDefault(); if (!LINK) return; try { ptt.setPointerCapture(e.pointerId); } catch (x) {} LINK.talk(true).then(ok => { if (ok) ptt.classList.add('on'); }); };
+  const up = () => { if (!LINK) return; ptt.classList.remove('on'); if (!LINK.openMic) LINK.talk(false); };
+  ptt.addEventListener('pointerdown', down); ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => ptt.addEventListener(n, up));
+  ptt.oncontextmenu = e => e.preventDefault();
+  $('#vOpen').onclick = () => { if (!LINK) return; const on = !LINK.openMic; LINK.setOpenMic(on).then(ok => { $('#vOpen').classList.toggle('on', !!(on && ok)); toast(on && ok ? T('openMicOn') : T('openMicOff')); }); };
+  $('#vRec').onclick = () => { if (!LINK) return; if (LINK.recording) LINK.recStop(); else LINK.recStart(20); };
+  $('#vEmo').onclick = () => {
+    const v = $('#voice'), old = v.querySelector('.emo'); if (old) { old.remove(); return; }
+    const p = document.createElement('div'); p.className = 'emo';
+    p.innerHTML = EMOJIS.map(e => '<button class="e">' + e + '</button>').join('') + ['ph1', 'ph2', 'ph3', 'ph4', 'ph5', 'ph6'].map(k => '<button>' + esc(T(k)) + '</button>').join('');
+    p.onclick = e => { const b = e.target.closest('button'); if (!b || !LINK) return; LINK.emoji(b.textContent); p.remove(); const one = b.classList.contains('e'); if (CUR && CUR.me >= 0) bubble(CUR.me, esc(b.textContent), one ? 'big' : '', one ? 3000 : 4500); };
+    v.appendChild(p);
+  };
+}
+
+/* ---- screens.js ---- */
+/* =====================================================================
+   TrickyNest — screens: home · setup · settings · stats · replays · rules · about · guide
+   ===================================================================== */
+const cid = (c, t) => { for (let i = 0; i < TE.DECK; i++) if (TE.BASE[i].c === c && TE.BASE[i].t === t) return i; return 0; };
+function renderHome() {
+  $('#homeFan').innerHTML = [cid(0, 7), cid(1, TE.P2), cid(-1, TE.KING), cid(3, TE.STOP)].map(c => cardHTML(c)).join('');
+  $('#verLbl').textContent = 'v' + APP_VERSION;
+  const box = $('#resumeBox'); let h = '';
+  const g = LS.get('game', null), sub = G => (G.cfg.scoring === 'points' ? T('roundN', { n: G.rn }) : T('game1'));
+  if (CUR && CUR.mode !== 'net' && CUR.G && !CUR.G.over) h += '<button class="mode resume" data-res="cur"><span class="ic">▶️</span><span><b>' + T('resume') + '</b><span>' + (CUR.mode === 'cpu' ? T('mCpu') : T('mHot')) + ' · ' + sub(CUR.G) + '</span></span></button>';
+  else if (g && g.G && !g.G.over) h += '<button class="mode resume" data-res="local"><span class="ic">▶️</span><span><b>' + T('resume') + '</b><span>' + (g.mode === 'cpu' ? T('mCpu') : T('mHot')) + ' · ' + sub(g.G) + '</span></span></button>';
+  if (NET && NET.sess) h += '<button class="mode resume" data-res="net"><span class="ic">🌐</span><span><b>' + T('resumeNet') + '</b><span class="ltr">' + esc(NET.sess.code || '') + '</span></span></button>';
+  box.innerHTML = h; box.classList.toggle('hide', !h);
+  box.querySelectorAll('[data-res]').forEach(b => b.onclick = () => {
+    const r = b.dataset.res;
+    if (r === 'cur') { show('game'); render(); scheduleBot(); }
+    else if (r === 'local') resumeLocal();
+    else if (LINK && CUR && CUR.mode === 'net') { show('game'); render(); }
+    else if (LINK) { show('online'); renderNet(); }
+    else netResume();
+  });
+}
+
+/* ---------- rules editor (new game + online lobby): a style sets all switches; any switch → custom ---------- */
+function segHTML(id, opts, cur) { return '<div class="seg" data-seg="' + id + '">' + opts.map(o => '<button data-v="' + o[0] + '"' + (String(o[0]) === String(cur) ? ' class="on"' : '') + '>' + o[1] + '</button>').join('') + '</div>'; }
+function bindSeg(root, id, cb) { const s = root.querySelector('[data-seg="' + id + '"]'); if (!s) return; s.onclick = e => { const b = e.target.closest('button'); if (!b) return; s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); cb(b.dataset.v); }; }
+const SWITCHES = [['stack2', 'r_stack2'], ['kingStops2', 'r_king'], ['lastCard', 'r_lc'], ['finishAction', 'r_fin'], ['cond2', 'r_cond']];
+function rulesEditor(el, cfg, onChange) {
+  const draw = () => {
+    const pre = cfg.preset || 'custom';
+    el.innerHTML = '<label class="f">' + T('preset') + segHTML('preset', ['classic', 'home', 'brutal', 'custom'].map(p => [p, T('pr_' + p)]), pre) + '</label><p class="muted" style="font-size:14px;margin:6px 0 4px">' + T('prD_' + pre) + '</p><div>'
+      + SWITCHES.map(([k, t]) => '<div class="sw"><span>' + T(t) + '<small class="muted">' + T(t + 'D') + '</small></span><input type="checkbox" data-r="' + k + '"' + (cfg[k] ? ' checked' : '') + (k === 'cond2' && !cfg.stack2 ? ' disabled' : '') + '></div>').join('')
+      + '<label class="f" style="margin-top:8px">' + T('r_draw') + segHTML('draw', [['one', T('dr_one')], ['until', T('dr_until')]], cfg.draw) + '</label>'
+      + '<label class="f" style="margin-top:8px">' + T('r_score') + segHTML('scoring', [['single', T('sc_single')], ['points', T('sc_points')]], cfg.scoring) + '</label>'
+      + (cfg.scoring === 'points' ? '<label class="f" style="margin-top:8px">' + T('r_target') + segHTML('target', [[50, '50'], [100, '100'], [200, '200']], cfg.target) + '</label>' : '') + '</div>';
+    bindSeg(el, 'preset', v => { if (v !== 'custom') Object.assign(cfg, TE.PRESETS[v]); cfg.preset = v; draw(); onChange && onChange(); });
+    el.querySelectorAll('[data-r]').forEach(c => c.onchange = () => { cfg[c.dataset.r] = c.checked; cfg.preset = matchPreset(cfg); draw(); onChange && onChange(); });
+    ['draw', 'scoring'].forEach(k => bindSeg(el, k, v => { cfg[k] = v; cfg.preset = matchPreset(cfg); draw(); onChange && onChange(); }));
+    bindSeg(el, 'target', v => { cfg.target = +v; onChange && onChange(); });
+  };
+  draw();
+}
+function matchPreset(cfg) { for (const p in TE.PRESETS) { const P = TE.PRESETS[p]; if (Object.keys(P).every(k => cfg[k] === P[k])) return p; } return 'custom'; }
+function rulesSummary(c) {
+  const f = [T('pr_' + (c.preset || 'custom'))];
+  if (c.stack2) f.push(T('rs_stack')); if (c.kingStops2) f.push(T('rs_king')); if (c.lastCard) f.push(T('rs_lc'));
+  if (!c.finishAction) f.push(T('rs_fin')); if (c.cond2 && c.stack2) f.push(T('rs_cond')); if (c.draw === 'until') f.push(T('rs_until'));
+  f.push(c.scoring === 'points' ? T('rs_pts', { n: c.target }) : T('oneGame'));
+  return f.join(' · ');
+}
+
+/* ---------- setup: vs computer / one phone ---------- */
+function openSetup(mode) {
+  $('#setupTitle').textContent = mode === 'cpu' ? T('mCpu') : T('mHot');
+  const B = $('#setupBody'), cfg = Object.assign({}, ST.rules);
+  let pes = pickPersonas(5, myAv());
+  let h = '';
+  if (mode === 'cpu') {
+    h += '<div class="card"><label class="f">' + T('yourName') + '<input id="sName" maxlength="16" value="' + esc(ST.name) + '"></label><label class="f" style="margin-top:10px">' + T('myAvatar') + '<div class="avs" id="sAvs"></div></label></div>'
+      + '<div class="card"><h3>' + T('opponents') + '</h3>' + segHTML('botN', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], ST.botN)
+      + '<div class="seats" id="meet" style="margin-top:10px"></div>'
+      + '<h3 style="margin-top:12px">' + T('level') + '</h3>' + segHTML('lvl', [[0, T('lvl0')], [1, T('lvl1')], [2, T('lvl2')]], ST.botLvl) + '<p class="muted" id="lvlD" style="font-size:14px;margin:8px 0 0"></p><p class="muted" style="font-size:12px;margin:6px 0 0">' + T('lvlNote') + '</p></div>';
+  } else {
+    h += '<div class="card"><h3>' + T('howMany') + '</h3>' + segHTML('hotN', [[2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6']], ST.hotN) + '<div class="seats" id="hotNames" style="margin-top:10px"></div></div>';
+  }
+  h += '<div class="card"><h3>' + T('rulesTitle') + '</h3><div id="sRules"></div></div><button class="btn main wide" id="sGo">' + T('startGame') + '</button>';
+  B.innerHTML = h;
+  rulesEditor($('#sRules'), cfg);
+  if (mode === 'cpu') {
+    const lv = () => $('#lvlD').textContent = T('lvlD' + ST.botLvl);
+    const avs = () => { $('#sAvs').innerHTML = Array.from({ length: AVN }, (_, i) => '<button data-av="' + (i + 1) + '"' + (myAv() === i + 1 ? ' class="on"' : '') + '><img src="' + avSrc(i + 1) + '" alt=""></button>').join(''); };
+    const meet = () => { $('#meet').innerHTML = pes.slice(0, ST.botN).map(pe => '<div class="seat"><img src="' + avSrc(pe + 1) + '" alt=""><b>' + esc(T('pn_' + pe)) + '</b><span class="muted" style="font-size:13px">' + esc(T('ps_' + pe)) + '</span></div>').join('') + '<button class="btn small" id="reroll">🎲</button>'; $('#reroll').onclick = () => { pes = pickPersonas(5, myAv()); meet(); }; };
+    bindSeg(B, 'botN', v => { ST.botN = +v; saveST(); meet(); }); bindSeg(B, 'lvl', v => { ST.botLvl = +v; saveST(); lv(); }); lv(); avs(); meet();
+    $('#sAvs').onclick = e => { const b = e.target.closest('[data-av]'); if (!b) return; ST.avatar = +b.dataset.av; saveST(); avs(); if (pes.includes(myAv() - 1)) { pes = pickPersonas(5, myAv()); meet(); } };
+    $('#sName').oninput = e => { ST.name = e.target.value.trim().slice(0, 16); saveST(); };
+  } else {
+    const names = () => { const el = $('#hotNames'); el.innerHTML = ''; for (let i = 0; i < ST.hotN; i++) el.innerHTML += '<div class="seat"><img src="' + avSrc(((myAv() - 1 + i) % AVN) + 1) + '" alt=""><input data-hn="' + i + '" maxlength="16" placeholder="' + T('player') + ' ' + (i + 1) + '" value="' + esc(ST.hotNames[i] || (i === 0 ? ST.name : '')) + '"></div>'; el.querySelectorAll('input').forEach(inp => inp.oninput = () => { ST.hotNames[+inp.dataset.hn] = inp.value.trim(); saveST(); }); };
+    bindSeg(B, 'hotN', v => { ST.hotN = +v; saveST(); names(); }); names();
+  }
+  $('#sGo').onclick = () => {
+    ST.rules = Object.assign({}, cfg); saveST();
+    if (mode === 'cpu') {
+      const ps = [{ name: ST.name || T('you'), kind: 'human', av: myAv() }];
+      for (let i = 0; i < ST.botN; i++) ps.push({ kind: 'bot', lvl: ST.botLvl, pe: pes[i], av: pes[i] + 1 });
+      startLocal('cpu', ps, cfg);
+    } else {
+      const ps = []; for (let i = 0; i < ST.hotN; i++) ps.push({ name: ST.hotNames[i] || (i === 0 && ST.name) || T('player') + ' ' + (i + 1), kind: 'human', av: ((myAv() - 1 + i) % AVN) + 1 });
+      startLocal('hot', ps, cfg);
+    }
+  };
+  show('setup');
+}
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  const B = $('#setBody');
+  B.innerHTML = '<div class="card"><label class="f">' + T('yourName') + '<input id="stName" maxlength="16" value="' + esc(ST.name) + '"></label><label class="f" style="margin-top:10px">' + T('myAvatar') + '<div class="avs" id="stAvs">' + Array.from({ length: AVN }, (_, i) => '<button data-av="' + (i + 1) + '"' + (myAv() === i + 1 ? ' class="on"' : '') + '><img src="' + avSrc(i + 1) + '" alt=""></button>').join('') + '</div></label></div>'
+    + '<div class="card"><h3>' + T('language') + '</h3>' + segHTML('lang', [['he', 'עברית'], ['en', 'English'], ['ru', 'Рус'], ['es', 'Esp'], ['ar', 'عربي']], ST.lang) + '</div>'
+    + '<div class="card"><h3>' + T('look') + '</h3><label class="f">' + T('theme') + segHTML('theme', THEMES.map(t => [t, T('th_' + t)]), ST.theme) + '</label>'
+    + '<label class="f" style="margin-top:10px">' + T('dayNight') + segHTML('mode', [['night', '🌙 ' + T('night')], ['day', '☀️ ' + T('day')]], ST.mode) + '</label>'
+    + '<label class="f" style="margin-top:10px">' + T('tableColor') + segHTML('board', [['grape', T('b_grape')], ['felt', T('b_felt')], ['wood', T('b_wood')], ['contrast', T('b_contrast')], ['theme', T('b_theme')]], ST.board) + '</label></div>'
+    + '<div class="card"><h3>' + T('gameplay') + '</h3>'
+    + '<label class="f">' + T('speed') + segHTML('speed', [['slow', T('sp_slow')], ['normal', T('sp_normal')], ['fast', T('sp_fast')]], ST.speed) + '</label>'
+    + [['oneTap', 'oneTap', 'oneTapD'], ['dim', 'dimIllegal'], ['showLacks', 'showLacks', 'showLacksD'], ['taunts', 'taunts'], ['sound', 'sound'], ['vib', 'vibrate']].map(([k, t, d]) => '<div class="sw"><span>' + T(t) + (d ? '<small class="muted">' + T(d) + '</small>' : '') + '</span><input type="checkbox" data-k="' + k + '"' + (ST[k] ? ' checked' : '') + '></div>').join('') + '</div>'
+    + '<div class="card"><h3>' + T('backup') + '</h3><p class="muted" style="font-size:14px">' + T('backupD') + '</p><div class="row"><button class="btn" id="bkOut">⬇️ ' + T('exportB') + '</button><button class="btn" id="bkIn">⬆️ ' + T('importB') + '</button></div><input type="file" id="bkFile" accept="application/json,.json" class="hide"></div>'
+    + '<div class="card"><div class="row"><button class="btn" id="stGuide">🧭 ' + T('guide') + '</button><button class="btn" id="stAbout">ℹ️ ' + T('about') + '</button></div></div>'
+    + '<button class="btn wide" id="stReset" style="border-color:var(--bad);color:var(--bad)">' + T('resetAll') + '</button>';
+  $('#stName').oninput = e => { ST.name = e.target.value.trim().slice(0, 16); saveST(); };
+  $('#stAvs').onclick = e => { const b = e.target.closest('[data-av]'); if (!b) return; ST.avatar = +b.dataset.av; saveST(); $$('#stAvs>button').forEach(x => x.classList.toggle('on', x === b)); };
+  bindSeg(B, 'lang', v => { ST.lang = v; saveST(); applyLang(); renderSettings(); renderHome(); });
+  ['theme', 'mode', 'board'].forEach(k => bindSeg(B, k, v => { ST[k] = v; saveST(); applyLook(); }));
+  bindSeg(B, 'speed', v => { ST.speed = v; saveST(); });
+  B.querySelectorAll('[data-k]').forEach(c => c.onchange = () => { ST[c.dataset.k] = c.checked; saveST(); });
+  $('#bkOut').onclick = exportBackup; $('#bkIn').onclick = () => $('#bkFile').click();
+  $('#bkFile').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; };
+  $('#stGuide').onclick = () => openGuide(); $('#stAbout').onclick = () => { renderAbout(); show('about'); };
+  $('#stReset').onclick = () => confirmBox(T('resetQ1'), T('resetAll'), () => confirmBox(T('resetQ2'), T('resetYes'), () => { LS.keys().forEach(k => LS.del(k)); location.reload(); }));
+}
+function exportBackup() {
+  const data = { app: 'trickynest', v: APP_VERSION, by: ST.name, date: new Date().toISOString(), settings: ST, stats: STATS, replays: REPLAYS, game: LS.get('game', null) };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' }), name = 'trickynest-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  const file = typeof File !== 'undefined' ? new File([blob], name, { type: 'application/json' }) : null;
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: 'TrickyNest', text: T('backupBy', { n: ST.name || '' }) }).catch(() => {}); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); toast(T('exported'));
+}
+function importBackup(f) {
+  const r = new FileReader();
+  r.onload = () => {
+    let d; try { d = JSON.parse(r.result); } catch (e) { toast(T('badFile')); return; }
+    if (!d || d.app !== 'trickynest') { toast(T('badFile')); return; }
+    confirmBox(T('importQ', { n: d.by || '?', d: (d.date || '').slice(0, 10) }), T('importB'), () => {
+      LS.set('settings', d.settings || {}); LS.set('stats', d.stats || {}); LS.set('replays', d.replays || []); if (d.game) LS.set('game', d.game); else LS.del('game');
+      location.reload();
+    });
+  };
+  r.readAsText(f);
+}
+
+/* ---------- stats ---------- */
+function renderStats() {
+  const box = (mode, title) => {
+    const s = STATS[mode] || {}, g = s.games || 0, w = s.wins || 0;
+    const cells = mode === 'hot' ? [['games', g], ['runs', s.runs || 0]] : [['games', g], ['wins', w], ['winPct', g ? Math.round(100 * w / g) + '%' : '—'], ['attacks', s.attacks || 0], ['took', s.took || 0], ['forgot', s.forgot || 0], ['runs', s.runs || 0], ['bestRun', s.bestRun || 0]];
+    let extra = '';
+    if (mode === 'cpu') extra = '<table class="sc" style="margin-top:10px"><tr><th>' + T('level') + '</th><th>' + T('games') + '</th><th>' + T('wins') + '</th></tr>' + [0, 1, 2].map(l => '<tr><td>' + lvlName(l) + '</td><td>' + (s['g' + l] || 0) + '</td><td>' + (s['w' + l] || 0) + '</td></tr>').join('') + '</table>';
+    return '<div class="card"><h3>' + title + '</h3><div class="stat">' + cells.map(c => '<div><b class="ltr">' + c[1] + '</b><span>' + T('s_' + c[0]) + '</span></div>').join('') + '</div>' + extra + '</div>';
+  };
+  $('#statBody').innerHTML = box('cpu', '🤖 ' + T('mCpu')) + box('net', '🌐 ' + T('mNet')) + box('hot', '📱 ' + T('mHot'));
+}
+function renderReplays() {
+  const B = $('#repBody');
+  if (!REPLAYS.length) { B.innerHTML = '<div class="card"><p>' + T('noReplays') + '</p><button class="btn main" id="rpPlay">' + T('playNow') + '</button></div>'; $('#rpPlay').onclick = () => openSetup('cpu'); return; }
+  const nm = (r, s) => { const p = r.players[s]; return p ? (p.kind === 'bot' && p.pe >= 0 ? T('pn_' + p.pe) : p.name) : ''; };
+  B.innerHTML = REPLAYS.map((r, i) => '<button class="mode" data-rp="' + i + '"><span class="ic">' + ({ cpu: '🤖', hot: '📱', net: '🌐' }[r.mode] || '🃏') + '</span><span><b>' + esc(r.players.map((p, s) => nm(r, s)).join(' · ')) + '</b><span>' + new Date(r.date).toLocaleDateString() + ' · ' + T('winnerIs', { n: esc(nm(r, r.winner)) }) + (r.log.length > 1 ? ' · ' + T('roundN', { n: r.log.length }) : '') + '</span></span></button>').join('');
+  B.querySelectorAll('[data-rp]').forEach(b => b.onclick = () => openReplay(REPLAYS[+b.dataset.rp]));
+}
+
+/* ---------- rules / about / guide ---------- */
+function rulesText(c) {
+  const gallery = '<div class="rcards">' + [cid(0, 3), cid(1, 7), cid(2, 9), cid(3, 1), cid(0, TE.STOP), cid(1, TE.REV), cid(2, TE.PLUS), cid(3, TE.P2), cid(0, TE.SEQ), cid(-1, TE.SSEQ), cid(-1, TE.CHG), cid(-1, TE.KING)].map(x => cardHTML(x)).join('') + '</div>';
+  return T('rulesHTML', {
+    cards: gallery, draw: c.draw === 'until' ? T('rh_drawUntil') : T('rh_drawOne'), stack: c.stack2 ? T('rh_stackOn') : T('rh_stackOff'), king: c.kingStops2 ? T('rh_kingOn') : T('rh_kingOff'),
+    lc: c.lastCard ? T('rh_lcOn') : T('rh_lcOff'), fin: c.finishAction ? T('rh_finOn') : T('rh_finOff'), cond: c.cond2 && c.stack2 ? T('rh_condOn') : '', score: c.scoring === 'points' ? T('rh_points', { t: c.target }) : T('rh_single')
+  });
+}
+function openRules(inGame) {
+  const cfg = inGame && CUR ? curView().cfg : ST.rules;
+  const head = '<p class="muted" style="font-size:14px">' + esc(rulesSummary(cfg)) + '</p>';
+  if (inGame) { const o = overlay('<div class="rules">' + head + rulesText(cfg) + '</div><button class="btn wide" data-x>' + T('close') + '</button>'); o.querySelector('[data-x]').onclick = () => closeOv(o); return; }
+  $('#rulesBody').innerHTML = head + rulesText(cfg);
+  show('rules');
+}
+function renderAbout() {
+  $('#aboutBody').innerHTML = '<div class="card" style="text-align:center"><img src="icon-192.png" alt="" width="84" height="84" style="border-radius:20px"><h2 style="margin-top:8px">TrickyNest</h2><p style="margin:2px 0">' + T('subtitle') + '</p><p class="muted ltr">v' + APP_VERSION + '</p></div>'
+    + '<div class="card"><div class="sw"><span>' + T('a_ver') + '</span><b class="ltr">' + APP_VERSION + '</b></div><div class="sw"><span>' + T('a_dev') + '</span><b>Barak Aflalo</b></div><div class="sw"><span>' + T('a_plat') + '</span><b class="ltr">PWA · HTML5</b></div><div class="sw"><span>' + T('a_store') + '</span><b>' + T('a_local') + '</b></div><div class="sw"><span>' + T('a_lic') + '</span><b class="ltr">© AppNest 2026</b></div></div>'
+    + '<div class="card seats"><a class="btn" href="https://appnest-store.pages.dev" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">🏪 ' + T('a_storeLink') + '</a><button class="btn" id="aShare">📤 ' + T('a_share') + '</button><a class="btn" href="mailto:appnest55@gmail.com?subject=TrickyNest" style="text-align:center;text-decoration:none">✉️ ' + T('a_feedback') + '</a><button class="btn" id="aGuide">🧭 ' + T('guide') + '</button><a class="btn" href="privacy_policy.html" target="_blank" style="text-align:center;text-decoration:none">🔒 ' + T('a_privacy') + '</a></div>'
+    + '<div class="card"><p class="muted" style="font-size:14px;margin:0">' + T('a_disc') + '</p></div>';
+  $('#aShare').onclick = () => { const d = { title: 'TrickyNest', text: T('shareTxt', { n: ST.name || '' }), url: location.origin + location.pathname }; if (navigator.share) navigator.share(d).catch(() => {}); else (navigator.clipboard ? navigator.clipboard.writeText(d.url) : Promise.reject()).then(() => toast(T('copied'))).catch(() => toast(esc(d.url))); };
+  $('#aGuide').onclick = () => openGuide();
+}
+function openGuide() {
+  const steps = ['g1', 'g2', 'g3', 'g4', 'g5'];
+  const demo = [[cid(0, 4), cid(0, 8), cid(2, 8)], [cid(0, TE.STOP), cid(1, TE.REV), cid(2, TE.PLUS), cid(3, TE.P2)], [cid(2, TE.SEQ), cid(2, 3), cid(2, 6), cid(-1, TE.SSEQ)], [cid(-1, TE.CHG), cid(-1, TE.KING)], [cid(1, 5)]];
+  let i = 0;
+  const o = overlay('<div class="guide" id="gBox"></div>');
+  const draw = () => {
+    o.querySelector('#gBox').innerHTML = '<div class="gdemo">' + demo[i].map(c => cardHTML(c, '', '', true)).join('') + '</div><h2 style="text-align:center">' + T(steps[i] + 't') + '</h2><p style="font-size:16px">' + T(steps[i] + 'd') + '</p>'
+      + '<div class="dots">' + steps.map((s, k) => '<i' + (k === i ? ' class="on"' : '') + '></i>').join('') + '</div>'
+      + '<div class="row"><button class="btn" data-g="skip">' + T('skip') + '</button><button class="btn main" data-g="next">' + (i < steps.length - 1 ? T('next') : T('letsPlay')) + '</button></div>';
+  };
+  o.onclick = e => { const b = e.target.closest('[data-g]'); if (!b) return; if (b.dataset.g === 'next' && i < steps.length - 1) { i++; draw(); } else { ST.guided = true; saveST(); closeOv(o); } };
+  draw();
+}
+
+/* =====================================================================
+   TrickyNest — init (embedded LAST: everything above must already exist)
+   ===================================================================== */
+(function init() {
+  applyLook(); applyLang(); renderHome();
+  $('#mCpu').onclick = () => openSetup('cpu');
+  $('#mHot').onclick = () => openSetup('hot');
+  $('#mNet').onclick = () => { show('online'); renderNet(); };
+  $('#tRules').onclick = () => openRules(false);
+  $('#tStats').onclick = () => { renderStats(); show('stats'); };
+  $('#tReplays').onclick = () => { renderReplays(); show('replays'); };
+  $('#tSettings').onclick = () => { renderSettings(); show('settings'); };
+  $('#qAbout').onclick = () => { renderAbout(); show('about'); };
+  $('#qTheme').onclick = () => { ST.theme = THEMES[(THEMES.indexOf(ST.theme) + 1) % THEMES.length]; saveST(); applyLook(); toast(T('theme') + ': ' + T('th_' + ST.theme), 1200); };
+  $('#qMode').onclick = () => { ST.mode = ST.mode === 'day' ? 'night' : 'day'; saveST(); applyLook(); };
+  document.addEventListener('click', e => { if (e.target.closest('[data-home]')) { show('home'); renderHome(); } });
+  $('#netBack').onclick = () => { show('home'); renderHome(); };
+  bindGame(); bindVoice();
+  // browsers block sound until the first tap
+  addEventListener('pointerdown', () => { try { if (AC && AC.state === 'suspended') AC.resume(); } catch (e) {} }, { passive: true });
+  // invite link: ?join=CODE
+  const q = new URLSearchParams(location.search);
+  if (q.get('join')) { if (NET && NET.role === 'guest' && NET.sess && NET.sess.code === q.get('join').toUpperCase()) netResume(); else { NET = null; LS.del('net'); show('online'); renderNet(); } }
+  else if (!ST.guided && !q.get('noguide')) openGuide();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  if ('serviceWorker' in navigator && location.protocol !== 'file:' && !q.get('nosw')) navigator.serviceWorker.register('sw.js').catch(() => {});
+  window.__tricky = { TE, TAI, get CUR() { return CUR; }, get NET() { return NET; }, get LINK() { return LINK; } };   // for automated tests
+})();
+
+</script>
+</body>
+</html>
